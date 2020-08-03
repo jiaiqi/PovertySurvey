@@ -1,0 +1,13 @@
+.button-box.data-v-63cfe984 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-justify-content: space-around;
+          justify-content: space-around;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
+  min-height: 200rpx;
+  background-color: #fff;
+}
+

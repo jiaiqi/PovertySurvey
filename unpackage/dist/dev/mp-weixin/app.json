@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/accountExec/accountExec",
+    "pages/index/index",
+    "pages/takePhotos/takePhotos",
+    "pages/formPage/formPage",
+    "pages/home/home",
+    "pages/list/list"
+  ],
+  "subPackages": [],
+  "window": {
+    "navigationBarTitleText": "特困人员生活能力评估",
+    "navigationBarBackgroundColor": "#0bc99d",
+    "backgroundColor": "#F8F8F8"
+  },
+  "usingComponents": {
+    "cu-custom": "/colorui/components/cu-custom"
+  }
+}

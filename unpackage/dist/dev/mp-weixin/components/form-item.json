@@ -1,0 +1,7 @@
+{
+  "component": true,
+  "usingComponents": {
+    "robby-image-upload": "/components/robby-image-upload/robby-image-upload",
+    "w-picker": "/components/w-picker/w-picker"
+  }
+}
