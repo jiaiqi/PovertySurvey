@@ -1,11 +1,12 @@
 {
   "pages": [
-    "pages/accountExec/accountExec",
+    "pages/home/home",
     "pages/index/index",
+    "pages/accountExec/accountExec",
     "pages/takePhotos/takePhotos",
     "pages/formPage/formPage",
-    "pages/home/home",
-    "pages/list/list"
+    "pages/list/list",
+    "pages/article/article"
   ],
   "subPackages": [],
   "window": {

@@ -37,6 +37,11 @@
 .list-wrap .current-tab.data-v-e3b6e520 {
   color: #0bc99d;
 }
+.list-wrap .list-box.data-v-e3b6e520 {
+  background-color: #efefef;
+  padding-top: 10rpx;
+  overflow: hidden;
+}
 .pagination.data-v-e3b6e520 {
   position: fixed;
   bottom: 120rpx;

@@ -1,5 +1,6 @@
 <template>
 	<view>
+		<!-- #ifdef H5 -->
 		<view class="search-bar" v-if="showSearchBar">
 			<view class="cu-bar search bg-white fixed">
 				<view class="search-form round">
@@ -10,6 +11,7 @@
 			</view>
 			<view style="height: 100upx;width: 100%;">占位</view>
 		</view>
+		<!-- #endif -->
 		<bx-list
 			ref="bxList"
 			:serviceName="serviceName"
@@ -19,7 +21,7 @@
 			:showTab="false"
 			:viewTemp="viewTemp"
 			:listConfig="listConfig"
-			:fixed="false"
+			:fixed="true"
 			:top="12"
 			:searchWords="searchVal"
 			:searchColumn="keyColumn"
@@ -52,11 +54,11 @@ export default {
 			fabVertical: 'bottom',
 			fabDirection: 'horizontal',
 			viewTemp: {
-				title: 'name',
-				tip: 'gender',
-				img: 'identity_image',
-				price: 'age',
-				footer: 'identity_no'
+				// title: 'name',
+				// tip: 'gender',
+				// img: 'identity_image',
+				// price: 'age',
+				// footer: 'identity_no'
 			},
 			publicButton: [],
 			searchVal: '',
@@ -76,17 +78,15 @@ export default {
 	},
 	onShow() {
 		if (this.serviceName && this.$refs.bxList) {
-			// this.getListV2();
 			this.$refs.bxList.onRefresh();
 		}
 	},
 	onLoad(option) {
-		if(option.serviceName){
-			this.serviceName = option.serviceName
+		if (option.serviceName) {
+			this.serviceName = option.serviceName;
 		}
 		// uni.setStorageSync('activeApp', 'daq');
 		this.getListV2();
-		return;
 		if (option.cond) {
 			try {
 				let cond = JSON.parse(this.getDecodeUrl(option.cond));
@@ -109,14 +109,7 @@ export default {
 			this.pageType = option.pageType;
 			this.getListV2();
 		} else {
-			// uni.showToast({
-			// 	title:"无效页面",
-			// 	icon:"Error"
-			// })
-			// setTimeout(()=>{
-			// 	uni.hideToast()
-			// 	uni.navigateBack()
-			// },2000)
+			
 		}
 	},
 	methods: {
@@ -175,7 +168,6 @@ export default {
 				});
 			}
 			console.log('click-list-item:', e);
-			
 		},
 		clickFootBtn(data) {
 			if (this.pageType === 'proc') {
@@ -218,10 +210,24 @@ export default {
 		},
 		async getListV2() {
 			let app = uni.getStorageSync('activeApp');
+			if (!app) {
+				app = 'daq';
+				uni.setStorageSync('activeApp', 'daq');
+			}
 			let colVs = await this.getServiceV2(this.serviceName, 'list', 'list', app);
 			colVs.srv_cols = colVs.srv_cols.filter(item => item.in_list === 1);
 			console.log('colVs', colVs);
 			this.listConfig = colVs;
+			if (colVs.more_config) {
+				if (typeof colVs.more_config === 'string') {
+					try {
+						colVs.more_config = JSON.parse(colVs.more_config);
+					} catch (e) {
+						//TODO handle the exception
+						console.log(e);
+					}
+				}
+			}
 			this.publicButton = colVs.gridButton.filter(item => {
 				if (item.permission === true) {
 					switch (item.button_type) {

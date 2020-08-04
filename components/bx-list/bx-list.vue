@@ -28,7 +28,7 @@
 				:bottom="bottom"
 				finishText="我是有底线的..."
 			>
-				<view class="" v-if="listType === 'list'">
+				<view class="list-box" v-if="listType === 'list'">
 					<list-item
 						:detailList="detailList"
 						v-for="item in listData"
@@ -44,6 +44,7 @@
 						:rowButton="rowButton"
 						:srv_cols="srv_cols"
 						:listType="listType"
+						:listConfig="listConfig"
 						@click-list-item="clickItem"
 						@click-foot-btn="clickFootBtn"
 					></list-item>
@@ -126,14 +127,20 @@ export default {
 			immediate: true,
 			handler(newValue) {
 				if (newValue && newValue.hasOwnProperty('srv_cols')) {
-					this.srv_cols = newValue.srv_cols;
+					this.srv_cols = this.deepClone(newValue.srv_cols);
 					let rowButton = newValue.rowButton;
+					if (newValue.more_config) {
+						if (typeof newValue.more_config === 'string') {
+							try {
+								newValue.more_config = JSON.parse(newValue.more_config);
+							} catch (e) {
+								//TODO handle the exception
+								console.log(e);
+							}
+						}
+					}
 					if (rowButton) {
 						rowButton = rowButton.filter(item => {
-							if (item.button_type == 'procdetail' && uni.getStorageSync('activeApp') === 'zhxq') {
-								item.button_name = '详情';
-								return item;
-							}
 							if (item.more_config) {
 								let more_config = {};
 								try {
@@ -153,9 +160,6 @@ export default {
 								) {
 									return item;
 								}
-							}
-							if (item.button_name === '住户登记' || item.button_name === '绑定房屋') {
-								return item;
 							}
 						});
 						this.rowButton = rowButton;
@@ -218,7 +222,6 @@ export default {
 				return 0;
 			}
 		},
-
 		// 是否通过fixed固定高度, 默认true
 		fixed: {
 			type: Boolean,
@@ -341,7 +344,6 @@ export default {
 			this.$emit('clickFootBtn', data);
 		},
 		async getListData(cond, proc_data_type, i) {
-			
 			uni.showLoading({
 				mask: true
 			});
@@ -443,7 +445,7 @@ export default {
 			}, 200);
 		},
 		loadData(pullScroll) {
-			console.log("上拉加载")
+			console.log('上拉加载');
 			let page = this.pageInfo;
 			this.pageInfo.pageNo = pullScroll.page;
 			if (this.listType === 'proc') {
@@ -502,142 +504,54 @@ export default {
 		console.log('---bxlist-----mounted---', uni.getStorageSync('isWy'));
 		this.pageInfo.pageNo = 0;
 		let serviceName = this.serviceName;
-		let isOwner = uni.getStorageSync('is_owner');
-		let isWy = uni.getStorageSync('isWy');
-		let isBaoAn = uni.getStorageSync('is_baoan');
-		if (isWy == true && (serviceName == 'srvzhxq_member_fuwu_select' || serviceName == 'srvzhxq_clgl_select')) {
-			this.tabList = [
-				{
-					label: '待我处理',
-					proc_data_type: 'wait',
-					data: [],
+		this.tabList = [
+			{
+				label: '待我处理',
+				proc_data_type: 'wait',
+				data: [],
+				total: 0,
+				page: {
 					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
-				},
-				{
-					label: '我的全部',
-					proc_data_type: 'myall',
-					data: [],
-					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
-				},
-				{
-					label: '我的申请',
-					proc_data_type: 'mine',
-					data: [],
-					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
-				},
-				{
-					label: '我已处理',
-					proc_data_type: 'processed',
-					data: [],
-					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
+					rownumber: 5,
+					pageNo: 1
 				}
-			];
-			this.proc_data_type = 'wait';
-		} else if ((isOwner || isBaoAn) && serviceName == 'srvzhxq_guest_mgmt_select') {
-			this.tabList = [
-				{
-					label: '待我处理',
-					proc_data_type: 'wait',
-					data: [],
+			},
+			{
+				label: '我的全部',
+				proc_data_type: 'myall',
+				data: [],
+				total: 0,
+				page: {
 					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
-				},
-				{
-					label: '我的全部',
-					proc_data_type: 'myall',
-					data: [],
-					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
-				},
-				{
-					label: '我的申请',
-					proc_data_type: 'mine',
-					data: [],
-					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
-				},
-				{
-					label: '我已处理',
-					proc_data_type: 'processed',
-					data: [],
-					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
+					rownumber: 5,
+					pageNo: 1
 				}
-			];
-			this.proc_data_type = 'wait';
-		} else if (!isOwner && serviceName == 'srvzhxq_guest_mgmt_select') {
-			this.tabList = [
-				{
-					label: '我的申请',
-					proc_data_type: 'mine',
-					data: [],
+			},
+			{
+				label: '我的申请',
+				proc_data_type: 'mine',
+				data: [],
+				total: 0,
+				page: {
 					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
+					rownumber: 5,
+					pageNo: 1
 				}
-			];
-			this.proc_data_type = 'mine';
-		} else if (
-			serviceName == 'srvzhxq_repairs_select' ||
-			serviceName == 'srvzhxq_syrk_select' ||
-			serviceName == 'srvzhxq_member_fuwu_select' ||
-			serviceName == 'srvzhxq_clgl_select'
-		) {
-			this.tabList = [
-				{
-					label: '我的全部',
-					proc_data_type: 'myall',
-					data: [],
+			},
+			{
+				label: '我已处理',
+				proc_data_type: 'processed',
+				data: [],
+				total: 0,
+				page: {
 					total: 0,
-					page: {
-						total: 0,
-						rownumber: 5,
-						pageNo: 1
-					}
+					rownumber: 5,
+					pageNo: 1
 				}
-			];
-			this.proc_data_type = 'myall';
-		}
-		
+			}
+		];
+		this.proc_data_type = 'wait';
+
 		this.getAllData();
 		this.tabsLength = this.tabList.length;
 	}
@@ -651,6 +565,11 @@ export default {
 	flex-direction: column;
 	.current-tab {
 		color: #0bc99d;
+	}
+	.list-box {
+		background-color: #efefef;
+		padding-top: 10rpx;
+		overflow: hidden;
 	}
 }
 .pagination {

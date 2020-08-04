@@ -760,7 +760,7 @@ function initData(vueOptions, context) {
     try {
       data = data.call(context); // 支持 Vue.prototype 上挂的数据
     } catch (e) {
-      if (Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.warn('根据 Vue 的 data 函数初始化小程序 data 失败，请尽量确保 data 函数中不访问 vm 对象，否则可能影响首次数据渲染速度。', data);
       }
     }
@@ -1720,7 +1720,7 @@ function normalizeComponent (
 
 /***/ }),
 
-/***/ 101:
+/***/ 103:
 /*!****************************************************************************!*\
   !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/evaluator.js ***!
   \****************************************************************************/
@@ -1885,17 +1885,6 @@ new _vuex.default.Store({
     mutations: _mutations.default },
 
   actions: _actions.default });exports.default = _default;
-
-/***/ }),
-
-/***/ 119:
-/*!**********************************************************************************************!*\
-  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/components/s-pull-scroll/back-top.png ***!
-  \**********************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAJ1BMVEUAAACGhobFxcX6+vpubm6qqqqZmZng4ODY2Ni4uLguLi5SUlL///8JT6i7AAAADHRSTlNNeqb1b5CFx72bWGN+OwvvAAAAnElEQVRIx+3MsQ2CUBSF4WOChVbGxAG0cAEtKV7iAtpYWTmHI1gwAiOwAyFQ3KE4eaGABO7tSCD3r/988Dxv0E/61RgtHUwlRjte+p0xS8ktwOwhdxtKpQw2JKQsqJE/KQN6yYmUDlUbOXxIqdCT05aUCoETSKlQnEipUJxIFZhoRyhOpDJMtL+im/DNoRUn5tNKp0QC7N7wvIXUAut4SPYhibFYAAAAAElFTkSuQmCC"
 
 /***/ }),
 
@@ -3161,6 +3150,17 @@ state, client_env) {
 
 /***/ }),
 
+/***/ 142:
+/*!**********************************************************************************************!*\
+  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/components/s-pull-scroll/back-top.png ***!
+  \**********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+module.exports = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABIBAMAAACnw650AAAAJ1BMVEUAAACGhobFxcX6+vpubm6qqqqZmZng4ODY2Ni4uLguLi5SUlL///8JT6i7AAAADHRSTlNNeqb1b5CFx72bWGN+OwvvAAAAnElEQVRIx+3MsQ2CUBSF4WOChVbGxAG0cAEtKV7iAtpYWTmHI1gwAiOwAyFQ3KE4eaGABO7tSCD3r/988Dxv0E/61RgtHUwlRjte+p0xS8ktwOwhdxtKpQw2JKQsqJE/KQN6yYmUDlUbOXxIqdCT05aUCoETSKlQnEipUJxIFZhoRyhOpDJMtL+im/DNoRUn5tNKp0QC7N7wvIXUAut4SPYhibFYAAAAAElFTkSuQmCC"
+
+/***/ }),
+
 /***/ 15:
 /*!*************************************************************************!*\
   !*** D:/user/Documents/HBuilderProjects/PovertySurvey/store/actions.js ***!
@@ -3237,7 +3237,694 @@ var _default = {
 
 /***/ }),
 
-/***/ 157:
+/***/ 16:
+/*!**********************************************************************!*\
+  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/api.js ***!
+  \**********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; // 把所有api的url统一在一起并挂在到vue对象上
+// 所有接口都在一个文件里会比较大
+var remoteAddress = {
+  ssourl: 'http://www.100xsys.cn', // 微信登陆sso 端口
+  ssoAddress: 'http://sso.100xsys.cn',
+  serviceAddress: 'https://srvms.100xsys.cn', // http://login.100xsys.cn 接口地址srvms.100xsys.cn
+  frontEndAddress: 'http://wx2.100xsys.cn',
+  backEndAddress: "https://login.100xsys.cn", //后台线上地址
+  bx_auth_ticket: "f28b318d-ad39-476e-adbb-9f69c2edcefb",
+  onTicket: false };
+
+var ENV = {
+  homePath: '/pages/home/home?website_no=WS2020080315200011',
+  frontEndAddress: remoteAddress.frontEndAddress, //前端线上地址
+  backEndAddress: remoteAddress.backEndAddress, //后台线上地址
+  appNo: {
+    // wxmp: 'APPNO20200214122021', //百想助理微信小程序 APPNO20200214122021
+    wxmp: 'APPNO20200731153421', //生活能力评估微信小程序 APPNO20200214122021
+    wxh5: 'APPNO20200107181133' //微信公众号
+  },
+  appID: {
+    // wxmp: 'wx8e6f993081f6e979',// 百想助理
+    wxmp: 'wx08876efb5760ca75', //生活能力评估
+    wxh5: '' },
+
+  getAuthorization: { //获取公众号授权
+    url: remoteAddress.serviceAddress + '/wx/operate/srvwx_public_page_authorization',
+    serviceName: 'srvwx_public_page_authorization' },
+
+  verifyLogin: { //公众号/小程序验证登录
+    url: remoteAddress.serviceAddress + '/wx/operate/srvwx_app_login_verify',
+    serviceName: 'srvwx_app_login_verify' },
+
+  accountLogin: { //公众号/小程序账号登录
+    url: remoteAddress.serviceAddress + 'wx/operate/srvwx_app_login',
+    serviceName: 'srvwx_app_login' },
+
+
+  /**
+                                       * 新旧api 分割线—————————————————————————————————————————————————————————— old 
+                                       * */
+  backUrl: remoteAddress.ssourl, // 授权域名
+  serverURL: remoteAddress.serviceAddress, // 后台地址
+  refuseCode: '0111', // 后台拒绝识别码
+  byCode: '1111', // 后台通过码
+  byState: 'SUCCESS', // 状态码
+  srvHost: remoteAddress.serviceAddress,
+  bindLogin: 'bind_login', // 授权成功,请登录绑定账号
+  authorizedLoginSuccess: 'authorized_login_success', // 授权成功,可以直接请求业务数据
+  ssoAuthor: remoteAddress.serviceAddress + '/wx/operate/', // sso授权地址
+  savewxuser: remoteAddress.ssoAddress + '/wx/savewxuser', // sso保存微信用户
+
+  getOpendId: remoteAddress.ssoAddress + '/wx/getOpendId', // sso保存微信用户 /wx/getOpendId
+  getSignature: remoteAddress.ssoAddress + '/wx/getSignature', // sso保存微信用户 /wx/getSignature ,
+  // 测试地址
+  testssoAuthor: remoteAddress.testUrl + '/wx/authorize', // sso授权地址
+  testsavewxuser: remoteAddress.testUrl + '/wx/savewxuser', // sso保存微信用户
+  testgetOpendId: remoteAddress.testUrl + '/wx/getOpendId', // sso保存微信用户 /wx/getOpendId
+  testgetSignature: remoteAddress.testUrl + '/wx/getSignature', // sso保存微信用户 /wx/getSignature ,
+  untied: remoteAddress.ssoAddress + '/wx/untied', // 微信解绑 http://Ip:port/wx/untied
+  loginAuthor: remoteAddress.ssoAddress + '/bindlogin', // 微信绑定登录地址http://Ip:port/bindlogin
+  getImg: remoteAddress.assetsUrl + '/main/', // 图片地址
+  downloadImg: remoteAddress.serviceAddress + '/file/download?filePath=', // 图片地址
+  getFilePath: remoteAddress.serviceAddress + '/file/download?filePath=', // 文件路径地址
+  select: remoteAddress.serviceAddress + '/bxsys/select', // 查询接口
+  toLogin: remoteAddress.ssoAddress + '/bxsyslogin', // 用户相关接口
+  getUserInfo: remoteAddress.ssoAddress + '/getUserInfo', // 用户信息
+  selectByUser: remoteAddress.serviceAddress + '/bxsys/srvms.100xsys.cn', // 用户菜单
+  selectOne: remoteAddress.serviceAddress + '/bxsys/selectOne', // 产品相关接口
+  startProc: remoteAddress.serviceAddress + '/bxsys/startProc', // 流程开启
+  approval: remoteAddress.serviceAddress + '/bxsys/approval', // 流程开启
+  startDataProc: remoteAddress.serviceAddress + '/bxsys/startDataProc', // 流程子开启
+  add: remoteAddress.serviceAddress + '/bxsys/operate', // 新增
+  update: remoteAddress.serviceAddress + '/bxsys/operate', // 修改
+  delete: remoteAddress.serviceAddress + '/bxsys/operate', // 删除
+  saveDraft: remoteAddress.serviceAddress + '/bxsys/saveDraft', // 保存草稿
+  upload: remoteAddress.serviceAddress + '/file/upload', // 上传文件
+  deleteFile: remoteAddress.serviceAddress + '/file/delete', // 删除文件
+  onTicket: remoteAddress.onTicket,
+  ticket: remoteAddress.bx_auth_ticket };var _default =
+
+ENV;exports.default = _default;
+
+/***/ }),
+
+/***/ 17:
+/*!*************************************************************************!*\
+  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/common.js ***!
+  \*************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@vue/babel-preset-app/node_modules/@babel/runtime/regenerator */ 18));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _createForOfIteratorHelper(o) {if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) {var i = 0;var F = function F() {};return { s: F, n: function n() {if (i >= o.length) return { done: true };return { done: false, value: o[i++] };}, e: function e(_e) {throw _e;}, f: F };}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");}var it,normalCompletion = true,didErr = false,err;return { s: function s() {it = o[Symbol.iterator]();}, n: function n() {var step = it.next();normalCompletion = step.done;return step;}, e: function e(_e2) {didErr = true;err = _e2;}, f: function f() {try {if (!normalCompletion && it.return != null) it.return();} finally {if (didErr) throw err;}} };}function _unsupportedIterableToArray(o, minLen) {if (!o) return;if (typeof o === "string") return _arrayLikeToArray(o, minLen);var n = Object.prototype.toString.call(o).slice(8, -1);if (n === "Object" && o.constructor) n = o.constructor.name;if (n === "Map" || n === "Set") return Array.from(n);if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);}function _arrayLikeToArray(arr, len) {if (len == null || len > arr.length) len = arr.length;for (var i = 0, arr2 = new Array(len); i < len; i++) {arr2[i] = arr[i];}return arr2;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}var _default = {
+  install: function install(Vue, options) {
+    Vue.prototype.pageTitle = '加载中…'; // 可以自定义变量
+    Vue.prototype.selectRequestObjs = function () {// 给自定义方法起个名
+      var selectRequestObj = {};
+      var condition = {};
+      var order = {};
+      selectRequestObj['serviceName'] = '';
+      selectRequestObj['colNames'] = ['*'];
+      selectRequestObj['condition'] = [];
+      condition['colName'] = '';
+      condition['ruleType'] = '';
+      condition['value'] = '';
+      selectRequestObj.condition.push(condition);
+      selectRequestObj['order'] = [];
+      order['colName'] = '';
+      order['orderType'] = '';
+      selectRequestObj.order.push(order);
+      return selectRequestObj;
+    };
+
+
+    Vue.prototype.getKeyOrValue = function (obj, ke, val, name, icon) {// 给自定义方法起个名
+      var Obj = obj;
+      var item = Obj.map(function (item) {
+        var a = {};
+        a['key'] = item[ke];
+        a['value'] = item[val];
+        a['name'] = item[name];
+        // console.log('====a:' + a)
+        if (item[icon] === null) {
+          a['icon'] = '../../assets/img/icons/init/menu-icon.png';
+        } else {
+          a['icon'] = Vue.prototype.$api.downloadImg + item[icon];
+        }
+        return a;
+      });
+      return item;
+    };
+
+    Vue.prototype.menuSpliceArr = function (arr, num) {// 根据组件定义菜单分页封装
+      var len = arr.length;
+      var se = 0;
+      var newArr = [];
+      var c = Math.ceil(len / num);
+      this.spli = function (r, n) {
+        var a = r.slice(n * num, n * num + num);
+        return a;
+      };
+      this.newA = function (arr, num) {
+        if (se < c) {
+          var l = this.spli(arr, se);
+          newArr.push(l);
+          se++;
+          this.newA(arr, num);
+        } else {
+          return newArr;
+        }
+      };
+      this.newA(arr, num);
+      return newArr;
+    };
+
+    Vue.prototype.getQueryString = function (name) {
+      var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+      var r = window.location.search.substr(1).match(reg);
+      if (r != null) return unescape(r[2]);return null;
+    };
+    Vue.prototype.colToLable = /*#__PURE__*/function () {var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee(serviceName, cols) {var req, data;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
+                // 通知columns查询label(中文名)
+                // let self = this
+                req = {
+                  serviceName: 'srvsys_service_columns_select',
+                  colNames: [
+                  'columns',
+                  'label'],
+
+                  condition: [
+                  {
+                    'colName': 'service_name',
+                    'value': serviceName,
+                    'ruleType': 'eq' },
+
+                  {
+                    'colName': 'columns',
+                    'value': cols,
+                    'ruleType': 'in' }],
+
+
+                  order: [
+                  {
+                    'colName': 'create_time',
+                    'orderType': 'asc' }] };_context.next = 3;return (
+
+
+
+                  this.$http.post(this.$api.select, req));case 3:data = _context.sent;return _context.abrupt("return",
+                data.data.data);case 5:case "end":return _context.stop();}}}, _callee, this);}));return function (_x, _x2) {return _ref.apply(this, arguments);};}();
+
+    Vue.prototype.getFooterBtns = function (e) {
+      // type : "duplicate" | edit | delete | detail
+      var btns = e;
+      var footerBtns = btns.filter(function (item) {return item.permission === true && (item.button_type === 'edit' || item.button_type === 'delete' || item.button_type === 'deletedraft' || item.button_type === 'closeproc' || item.button_type === 'deleteproc' || item.button_type === 'startproc' || item.button_type === 'customize');});
+      return footerBtns;
+    };
+    // Vue.prototype.loadingStatus=function(value){
+    // 	switch (value) {
+    // 		case 0:
+    // 			if(this.valno){
+    // 				this.status = 3
+    // 			}else{
+    // 				this.status = 2
+    // 			}
+    // 			break;
+    // 		case 10:
+    // 			this.status = 0
+    // 			break;
+    // 		default:
+    // 			this.status = 2;
+    // 			break;
+    // 	}
+    // }
+    Vue.prototype.selectOne = /*#__PURE__*/function () {var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2(srv, cond) {var self, req, response;return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0: // 查询
+                self = this;
+
+                req = {};
+                req.serviceName = srv;
+                req.colNames = ['*'];
+                req.condition = [];
+                req.condition = cond;
+                // req.condition[1] = JSON.parse(JSON.stringify(condObj))
+                req.order = [
+                {
+                  'colName': 'id',
+                  'orderType': 'asc' }];_context2.next = 9;return (
+
+
+                  this.$http.post(self.$api.select, req));case 9:response = _context2.sent;if (!
+                response.data.data) {_context2.next = 14;break;}return _context2.abrupt("return",
+                response.data.data[0]);case 14:return _context2.abrupt("return",
+
+                '查询失败');case 15:case "end":return _context2.stop();}}}, _callee2, this);}));return function (_x3, _x4) {return _ref2.apply(this, arguments);};}();
+
+
+    Vue.prototype.showLoading = function (ifShow) {
+      var self = this;
+      if (ifShow) {
+        self.$store.dispatch({
+          type: 'showLoading' });
+
+      } else {
+        self.$store.dispatch({
+          type: 'hideLoading' });
+
+      }
+    };
+    Vue.prototype.getImageUrl = /*#__PURE__*/function () {var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3(fileNo) {var self, req, response, fileurl;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:
+                self = this;
+                req = {};
+                req.serviceName = 'srvsys_file_select';
+                req.colNames = ['*'];
+                req.condition = [];
+                req.condition = [{
+                  'colName': 'file_no',
+                  'value': fileNo,
+                  'ruleType': 'eq' }];
+
+                req.page = null;
+                req.order = null;_context3.next = 10;return (
+                  this.$http.post(self.$api.select, req));case 10:response = _context3.sent;if (!
+                response.data.data) {_context3.next = 17;break;}
+                fileurl = response.data.data;
+                fileurl = fileurl.map(function (item) {
+                  item._url = self.$api.getFilePath + item.fileurl;
+                  return item;
+                });return _context3.abrupt("return",
+                fileurl);case 17:return _context3.abrupt("return",
+
+                '查询失败');case 18:case "end":return _context3.stop();}}}, _callee3, this);}));return function (_x5) {return _ref3.apply(this, arguments);};}();
+
+
+    Vue.prototype.getDispExps = function (item, data) {// 表达式校验
+      var result = true;
+      try {
+        var dispExps = item.disp_exps;
+        if (dispExps !== undefined && dispExps !== '' && dispExps !== null) {
+          // eslint-disable-next-line
+          result = eval(dispExps);
+        }
+      } catch (err) {
+        console.error('按钮表达式执行错误');
+      }
+      return result;
+    };
+    Vue.prototype.selectUserMenu = /*#__PURE__*/function () {var _ref4 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee4(cond) {var self, req, response;return _regenerator.default.wrap(function _callee4$(_context4) {while (1) {switch (_context4.prev = _context4.next) {case 0: // 查询菜单
+                self = this;
+
+                req = {};
+                req.serviceName = 'srvsys_user_menu_select';
+                req.colNames = ['*'];
+                req.condition = [];
+                req.condition = cond;
+                // req.condition[1] = JSON.parse(JSON.stringify(condObj))
+                req.order = [{}];
+                req.order[0].colName = 'seq';
+                req.order[0].orderType = 'asc';_context4.next = 11;return (
+                  this.$http.post(self.$api.selectByUser, req));case 11:response = _context4.sent;if (!
+                response.data.data) {_context4.next = 16;break;}return _context4.abrupt("return",
+                response.data.data);case 16:return _context4.abrupt("return",
+
+                '查询失败');case 17:case "end":return _context4.stop();}}}, _callee4, this);}));return function (_x6) {return _ref4.apply(this, arguments);};}();
+
+
+
+    Vue.prototype.deleteRow = /*#__PURE__*/function () {var _ref5 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee5(srv, cond) {var self, reqs, req, response;return _regenerator.default.wrap(function _callee5$(_context5) {while (1) {switch (_context5.prev = _context5.next) {case 0: // 删除数据
+                self = this;
+                reqs = [];
+                req = {};
+                // [{"serviceName":"srvplm_qrcode_html_delete","condition":[{"colName":"id","ruleType":"in","value":"23"}]}]
+                req.serviceName = srv;
+                req.condition = cond;
+                reqs.push(req);_context5.next = 8;return (
+                  this.$http.post(self.$api.delete, reqs));case 8:response = _context5.sent;if (!(
+                response.data.state === 'SUCCESS')) {_context5.next = 13;break;}return _context5.abrupt("return",
+                response.data.response);case 13:return _context5.abrupt("return",
+
+                '删除失败');case 14:case "end":return _context5.stop();}}}, _callee5, this);}));return function (_x7, _x8) {return _ref5.apply(this, arguments);};}();
+
+
+    Vue.prototype.getGridButton = function (datas, srv, conds) {
+      var self = this;
+      var d = datas;
+      var headbut = {
+        buttons: [],
+        menus: [],
+        showMenus: false };
+      // button type :  select | refresh | add | batch_delete | import | export | shrink | apply
+      var newData = d.filter(function (item) {return item.permission === true && (item.button_type === 'select' || item.button_type === 'add' || item.button_type === 'apply' || item.button_type === 'import' || item.button_type === 'export') && item.client_type.indexOf('APP') !== -1;});
+      var butType = newData.map(function (item) {return item.button_type;});
+      for (var i = 0; i < newData.length; i++) {
+        if (newData[i].button_type === 'select') {
+          var b = {
+            type: 'search',
+            url: '',
+            cfg: { serviceName: self.listCfgs.serviceName, colType: 'select', pageType: 'selectlist' } };
+
+          headbut.buttons.push(b);
+        } else if (newData[i].button_type === 'add') {
+          var _b = {
+            type: 'add',
+            url: '',
+            cfg: {
+              path: '/add',
+              query: {
+                serviceName: self.listCfgs.serviceName,
+                pageType: 'add',
+                title: newData[i].service_view_name,
+                foreignKey: conds } } };
+
+
+
+          headbut.buttons.push(_b);
+        } else if (newData[i].button_type === 'apply') {
+          var _b2 = {
+            type: 'add',
+            url: '',
+            cfg: {
+              path: '/add',
+              query: {
+                serviceName: self.listCfgs.serviceName,
+                pageType: 'apply',
+                title: newData[i].service_view_name } } };
+
+
+
+          headbut.buttons.push(_b2);
+        } else {
+          var _b3 = {
+            label: newData[i].button_name,
+            type: 'warn',
+            value: newData[i].button_type,
+            url: '',
+            cfg: [] };
+
+          headbut.menus.push(_b3);
+        }
+      }
+      if (headbut.menus.length > 0) {
+        headbut.showMenus = true;
+      } else {
+        headbut.showMenus = false;
+      }
+      self.$store.dispatch({
+        type: 'setHeadrBar',
+        data: headbut });
+
+      console.log(headbut, newData, butType);
+    };
+    Vue.prototype.toListDataCtr = /*#__PURE__*/function () {var _ref6 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee6(data, type, listType) {var typeCfg, resData, cols, labs, req,
+
+
+
+
+
+
+
+        colNamesArr, Obj;return _regenerator.default.wrap(function _callee6$(_context6) {while (1) {switch (_context6.prev = _context6.next) {case 0:colNamesArr = function _colNamesArr(e) {
+                  // cols
+                  var list = e;
+                  var arr = [];
+                  for (var i in list) {
+                    if (list[i] !== '') {
+                      arr.push(list[i]); // 属性
+                      // arr.push(obj[i]); //值
+                    }
+                  }
+                  return arr.join();
+                }; // 参数data:原始data; type:配置json
+                // 根据表格配置 构造data
+                // let self = this
+                typeCfg = type.type; // 表格类型
+                resData = data; // 原始data
+                cols = [];labs = [];req = [];cols = colNamesArr(type.content); // console.log('cols:')
+                // console.log(cols)
+                _context6.next = 9;return this.colToLable(type.serviceName, cols);case 9:labs = _context6.sent; // console.log(labs)
+                if (typeCfg === '1') {// let Obj = resData.map(function (item, index) {
+                  Obj = resData.map(function (item, index) {var columnsCfg = type.content;
+                    function colToL(c) {
+                      // cols
+                      var L = labs;
+                      var arr = L.filter(function (item) {return item.columns === c;});
+                      // console.log(arr)
+                      return arr[0] === undefined ? '' : arr[0].label;
+                    }
+
+                    var a = {
+                      src: item[columnsCfg.Comp_img],
+                      key: item[columnsCfg.p_key],
+                      id: item.id,
+                      title: {
+                        value: item[columnsCfg.Comp_title],
+                        label: item[columnsCfg.Comp_title_label] },
+
+                      content: [
+                      [
+                      {
+                        label: colToL(columnsCfg.Comp_subtitle),
+                        value: item[columnsCfg.Comp_subtitle] }],
+
+
+                      [
+                      {
+                        label: colToL(columnsCfg.Comp_content_row_left),
+                        value: item[columnsCfg.Comp_content_row_left] },
+
+                      {
+                        label: colToL(columnsCfg.Comp_content_row_right),
+                        value: item[columnsCfg.Comp_content_row_right] }]],
+
+
+
+                      footer: {
+                        linkText: '详情',
+                        columns: {
+                          label: colToL(columnsCfg.Comp_footer),
+                          value: item[columnsCfg.Comp_footer] } },
+
+
+                      data: item };
+
+                    // if(listType){
+                    //   if(listType === 'addchildlist'){}
+                    // }
+                    return a;
+                  });
+                  req = Obj;
+                }
+                // console.log(resData, req)
+                return _context6.abrupt("return", req);case 12:case "end":return _context6.stop();}}}, _callee6, this);}));return function (_x9, _x10, _x11) {return _ref6.apply(this, arguments);};}();
+
+    Vue.prototype.getColValidators = function (cols) {// 根据columns data 返回字段校验信息
+      if (cols) {
+        if (cols.validators !== null && cols.validators_message !== null) {
+          var str = cols.validators;
+          var msg = cols.validators_message;
+
+          var getStr = function getStr(val, state, end) {
+            if (val.length > state.length + end.length) {
+              var s = val.indexOf(state);
+              if (s === -1) {
+                return '';
+              } else {
+                var nval = val.slice(s + state.length, val.length);
+                var e = nval.indexOf(end);
+                var _str = nval.slice(0, e);
+                if (e === -1) {
+                  _str = nval.slice(0);
+                }
+                return _str;
+              }
+            } else {
+              return '';
+            }
+          };
+          var Validators = {};
+          var reg = /required/gi;
+          var msgs = getStr(msg, 'ngPattern=', ';');
+          msgs = msgs === '' ? cols.label + '信息有误' : msgs;
+          Validators['max'] = getStr(str, 'ngMaxlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMaxlength=', ';')) : null;
+          Validators['min'] = getStr(str, 'ngMinlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMinlength=', ';')) : null;
+          Validators['reg'] = getStr(str, 'ngPattern=', ';');
+          Validators['col_type'] = cols.bx_col_type;
+          Validators['required'] = reg.test(str);
+          Validators['msg'] = msgs;
+          Validators['isType'] = function (e) {
+            var reg = new RegExp(getStr(str, 'ngPattern=', ';'));
+            if (reg.test(e)) {
+              var obj = { valid: reg.test(e) };
+              return obj;
+            } else {
+              var _msgs = getStr(msg, 'ngPattern=', ';');
+              _msgs = _msgs === '' ? cols.label + '信息有误' : _msgs;
+              var _obj = { valid: reg.test(e), msg: _msgs };
+              return _obj;
+            }
+          };
+          return Validators;
+        } else {
+          var _Validators = {};
+          // let msgs = getStr(msg, 'ngPattern=', ';')
+          // msgs = msgs === '' ? cols.label + '信息有误' : msgs
+          _Validators['max'] = null;
+          _Validators['min'] = null;
+          _Validators['reg'] = '';
+          _Validators['col_type'] = cols.bx_col_type;
+          _Validators['required'] = false;
+          _Validators['msg'] = '';
+          _Validators['isType'] = function (e) {
+            var reg = new RegExp();
+            if (reg.test(e)) {
+              var obj = { valid: reg.test(e) };
+              return obj;
+            } else {
+              var _msgs2 = '';
+              _msgs2 = '';
+              var _obj2 = { valid: reg.test(e), msg: _msgs2 };
+              return _obj2;
+            }
+          };
+          return _Validators;
+        }
+      } else {
+        return false;
+      }
+    };
+    Vue.prototype.getValidators = function (vds, msg) {// 获取校验信息返回组件data
+      if (vds !== null && msg !== null) {
+        var str = vds;
+        var getStr = function getStr(val, state, end) {
+          if (val.length > state.length + end.length) {
+            var s = val.indexOf(state);
+            if (s === -1) {
+              return '';
+            } else {
+              var nval = val.slice(s + state.length, val.length);
+              var e = nval.indexOf(end);
+              var _str2 = nval.slice(0, e);
+              if (e === -1) {
+                _str2 = nval.slice(0);
+              }
+              return _str2;
+            }
+          } else {
+            return '';
+          }
+        };
+        var Validators = {};
+        var reg = /required/gi;
+        Validators['max'] = getStr(str, 'ngMaxlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMaxlength=', ';')) : null;
+        Validators['min'] = getStr(str, 'ngMinlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMinlength=', ';')) : null;
+        Validators['reg'] = getStr(str, 'ngPattern=', ';');
+        Validators['required'] = reg.test(str);
+        Validators['msg'] = getStr(msg, 'ngPattern=', ';');
+        Validators['isType'] = function (e) {
+          var reg = new RegExp(getStr(str, 'ngPattern=', ';'));
+          if (reg.test(e)) {
+            var obj = { valid: reg.test(e) };
+            return obj;
+          } else {
+            var msgs = getStr(msg, 'ngPattern=', ';');
+            msgs = msgs === '' ? '信息有误' : msgs;
+            var _obj3 = { valid: reg.test(e), msg: msgs };
+            return _obj3;
+          }
+        };
+        return Validators;
+      } else {
+        return false;
+      }
+    };
+    Vue.prototype.getColData = /*#__PURE__*/function () {var _ref7 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee7(srv, srvType, pageType) {var self, len, serviceName, cols, nCols, req, condObj, response;return _regenerator.default.wrap(function _callee7$(_context7) {while (1) {switch (_context7.prev = _context7.next) {case 0: // 表单信息 srvType : add | update | list | detail | select
+                // use_type: detail | proclist | list | treelist | detaillist | selectlist | addchildlist | updatechildlist | procdetaillist | add | update
+                self = this;if (!(
+                srv && srvType && pageType)) {_context7.next = 38;break;}
+                len = srv.lastIndexOf('_');
+
+                serviceName = srv.slice(0, len) + '_';
+                if (srvType === 'list' || srvType === 'detail') {
+                  serviceName += 'select';
+                } else {
+                  serviceName += srvType;
+                }
+                cols = self.$store.getters.getSrvCol;
+                nCols = cols.filter(function (item) {return item.service_name === serviceName && item.use_type === pageType;});
+                console.log('=====1', nCols);if (!(
+                nCols.length === 0)) {_context7.next = 34;break;}
+                req = this.selectRequestObjs();
+                req.serviceName = 'srvsys_service_columnex_v2_select';
+                req.colNames = ['*'];
+                req.condition = [];
+                condObj = {};
+                condObj['colName'] = 'service_name';
+                condObj['ruleType'] = 'eq';
+                condObj['value'] = serviceName;
+                req.condition[0] = JSON.parse(JSON.stringify(condObj));
+                condObj['colName'] = 'use_type';
+                condObj['ruleType'] = 'eq';
+                condObj['value'] = pageType;
+                req.condition[1] = JSON.parse(JSON.stringify(condObj));
+                req.order[0].colName = 'seq';
+                req.order[0].orderType = 'asc';_context7.next = 26;return (
+                  this.$http.post(self.$api.select, req));case 26:response = _context7.sent;if (!
+                response.data.data) {_context7.next = 32;break;}
+                console.log('=====2', response.data.data);
+                response.data.data.use_type = pageType;
+                if ('rowButton' in response.data.data) {
+                  response.data.data._footerBtns = this.getFooterBtns(response.data.data.rowButton);
+                }
+                // self.$store.commit('setSrvCol', response.data.data)
+                // 第一次拿到，缓存
+                return _context7.abrupt("return", response.data.data);case 32:_context7.next = 36;break;case 34:
+
+
+                console.log('=====3', nCols);return _context7.abrupt("return",
+                nCols[0]);case 36:_context7.next = 39;break;case 38:return _context7.abrupt("return",
+
+
+                false);case 39:case "end":return _context7.stop();}}}, _callee7, this);}));return function (_x12, _x13, _x14) {return _ref7.apply(this, arguments);};}();
+
+
+
+    /**
+                                                                                                                                                                           * find descendant nodes with type and predict
+                                                                                                                                                                           * @param type
+                                                                                                                                                                           * @param predict
+                                                                                                                                                                           * @returns {*}
+                                                                                                                                                                           */
+    Vue.prototype.findAnyNodeByTypeAndPredict = function (type, predict) {
+      var nodeType = this.$options.name || this.$options._componentTag;
+      if (nodeType && nodeType === type && (!predict || predict(this))) {
+        return this;
+      } else {var _iterator = _createForOfIteratorHelper(
+        this.$children),_step;try {for (_iterator.s(); !(_step = _iterator.n()).done;) {var child = _step.value;
+            var match = child.findAnyNodeByTypeAndPredict(type, predict);
+            if (match) {
+              return match;
+            }
+          }} catch (err) {_iterator.e(err);} finally {_iterator.f();}
+        return null;
+      }
+    };
+  } };exports.default = _default;
+
+/***/ }),
+
+/***/ 18:
+/*!*********************************************************************************************!*\
+  !*** ./node_modules/@vue/babel-preset-app/node_modules/@babel/runtime/regenerator/index.js ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! regenerator-runtime */ 19);
+
+/***/ }),
+
+/***/ 180:
 /*!**************************************************************************************************!*\
   !*** D:/user/Documents/HBuilderProjects/PovertySurvey/components/w-picker/city-data/province.js ***!
   \**************************************************************************************************/
@@ -3387,7 +4074,7 @@ provinceData;exports.default = _default;
 
 /***/ }),
 
-/***/ 158:
+/***/ 181:
 /*!**********************************************************************************************!*\
   !*** D:/user/Documents/HBuilderProjects/PovertySurvey/components/w-picker/city-data/city.js ***!
   \**********************************************************************************************/
@@ -4901,7 +5588,7 @@ cityData;exports.default = _default;
 
 /***/ }),
 
-/***/ 159:
+/***/ 182:
 /*!**********************************************************************************************!*\
   !*** D:/user/Documents/HBuilderProjects/PovertySurvey/components/w-picker/city-data/area.js ***!
   \**********************************************************************************************/
@@ -17454,98 +18141,7 @@ areaData;exports.default = _default;
 
 /***/ }),
 
-/***/ 16:
-/*!**********************************************************************!*\
-  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/api.js ***!
-  \**********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0; // 把所有api的url统一在一起并挂在到vue对象上
-// 所有接口都在一个文件里会比较大
-var remoteAddress = {
-  ssourl: 'http://www.100xsys.cn', // 微信登陆sso 端口
-  ssoAddress: 'http://sso.100xsys.cn',
-  serviceAddress: 'https://srvms.100xsys.cn', // http://login.100xsys.cn 接口地址srvms.100xsys.cn
-  frontEndAddress: 'http://wx2.100xsys.cn',
-  bx_auth_ticket: "f28b318d-ad39-476e-adbb-9f69c2edcefb",
-  onTicket: false };
-
-var ENV = {
-  homePath: '/pages/home/home?website_no=WS2020080315200011',
-  frontEndAddress: remoteAddress.frontEndAddress, //前端线上地址
-  appNo: {
-    // wxmp: 'APPNO20200214122021', //百想助理微信小程序 APPNO20200214122021
-    wxmp: 'APPNO20200731153421', //生活能力评估微信小程序 APPNO20200214122021
-    wxh5: 'APPNO20200107181133' //微信公众号
-  },
-  appID: {
-    // wxmp: 'wx8e6f993081f6e979',// 百想助理
-    wxmp: 'wx08876efb5760ca75', //生活能力评估
-    wxh5: '' },
-
-  getAuthorization: { //获取公众号授权
-    url: remoteAddress.serviceAddress + '/wx/operate/srvwx_public_page_authorization',
-    serviceName: 'srvwx_public_page_authorization' },
-
-  verifyLogin: { //公众号/小程序验证登录
-    url: remoteAddress.serviceAddress + '/wx/operate/srvwx_app_login_verify',
-    serviceName: 'srvwx_app_login_verify' },
-
-  accountLogin: { //公众号/小程序账号登录
-    url: remoteAddress.serviceAddress + 'wx/operate/srvwx_app_login',
-    serviceName: 'srvwx_app_login' },
-
-
-  /**
-                                       * 新旧api 分割线—————————————————————————————————————————————————————————— old 
-                                       * */
-  backUrl: remoteAddress.ssourl, // 授权域名
-  serverURL: remoteAddress.serviceAddress, // 后台地址
-  refuseCode: '0111', // 后台拒绝识别码
-  byCode: '1111', // 后台通过码
-  byState: 'SUCCESS', // 状态码
-  srvHost: remoteAddress.serviceAddress,
-  bindLogin: 'bind_login', // 授权成功,请登录绑定账号
-  authorizedLoginSuccess: 'authorized_login_success', // 授权成功,可以直接请求业务数据
-  ssoAuthor: remoteAddress.serviceAddress + '/wx/operate/', // sso授权地址
-  savewxuser: remoteAddress.ssoAddress + '/wx/savewxuser', // sso保存微信用户
-
-  getOpendId: remoteAddress.ssoAddress + '/wx/getOpendId', // sso保存微信用户 /wx/getOpendId
-  getSignature: remoteAddress.ssoAddress + '/wx/getSignature', // sso保存微信用户 /wx/getSignature ,
-  // 测试地址
-  testssoAuthor: remoteAddress.testUrl + '/wx/authorize', // sso授权地址
-  testsavewxuser: remoteAddress.testUrl + '/wx/savewxuser', // sso保存微信用户
-  testgetOpendId: remoteAddress.testUrl + '/wx/getOpendId', // sso保存微信用户 /wx/getOpendId
-  testgetSignature: remoteAddress.testUrl + '/wx/getSignature', // sso保存微信用户 /wx/getSignature ,
-  untied: remoteAddress.ssoAddress + '/wx/untied', // 微信解绑 http://Ip:port/wx/untied
-  loginAuthor: remoteAddress.ssoAddress + '/bindlogin', // 微信绑定登录地址http://Ip:port/bindlogin
-  getImg: remoteAddress.assetsUrl + '/main/', // 图片地址
-  downloadImg: remoteAddress.serviceAddress + '/file/download?filePath=', // 图片地址
-  getFilePath: remoteAddress.serviceAddress + '/file/download?filePath=', // 文件路径地址
-  select: remoteAddress.serviceAddress + '/bxsys/select', // 查询接口
-  toLogin: remoteAddress.ssoAddress + '/bxsyslogin', // 用户相关接口
-  getUserInfo: remoteAddress.ssoAddress + '/getUserInfo', // 用户信息
-  selectByUser: remoteAddress.serviceAddress + '/bxsys/srvms.100xsys.cn', // 用户菜单
-  selectOne: remoteAddress.serviceAddress + '/bxsys/selectOne', // 产品相关接口
-  startProc: remoteAddress.serviceAddress + '/bxsys/startProc', // 流程开启
-  approval: remoteAddress.serviceAddress + '/bxsys/approval', // 流程开启
-  startDataProc: remoteAddress.serviceAddress + '/bxsys/startDataProc', // 流程子开启
-  add: remoteAddress.serviceAddress + '/bxsys/operate', // 新增
-  update: remoteAddress.serviceAddress + '/bxsys/operate', // 修改
-  delete: remoteAddress.serviceAddress + '/bxsys/operate', // 删除
-  saveDraft: remoteAddress.serviceAddress + '/bxsys/saveDraft', // 保存草稿
-  upload: remoteAddress.serviceAddress + '/file/upload', // 上传文件
-  deleteFile: remoteAddress.serviceAddress + '/file/delete', // 删除文件
-  onTicket: remoteAddress.onTicket,
-  ticket: remoteAddress.bx_auth_ticket };var _default =
-
-ENV;exports.default = _default;
-
-/***/ }),
-
-/***/ 160:
+/***/ 183:
 /*!****************************************************************************************!*\
   !*** D:/user/Documents/HBuilderProjects/PovertySurvey/components/w-picker/w-picker.js ***!
   \****************************************************************************************/
@@ -18203,733 +18799,6 @@ var initPicker = {
 
 
 initPicker;exports.default = _default;
-
-/***/ }),
-
-/***/ 17:
-/*!*************************************************************************!*\
-  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/common.js ***!
-  \*************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;var _regenerator = _interopRequireDefault(__webpack_require__(/*! ./node_modules/@vue/babel-preset-app/node_modules/@babel/runtime/regenerator */ 18));function _interopRequireDefault(obj) {return obj && obj.__esModule ? obj : { default: obj };}function _createForOfIteratorHelper(o) {if (typeof Symbol === "undefined" || o[Symbol.iterator] == null) {if (Array.isArray(o) || (o = _unsupportedIterableToArray(o))) {var i = 0;var F = function F() {};return { s: F, n: function n() {if (i >= o.length) return { done: true };return { done: false, value: o[i++] };}, e: function e(_e) {throw _e;}, f: F };}throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");}var it,normalCompletion = true,didErr = false,err;return { s: function s() {it = o[Symbol.iterator]();}, n: function n() {var step = it.next();normalCompletion = step.done;return step;}, e: function e(_e2) {didErr = true;err = _e2;}, f: function f() {try {if (!normalCompletion && it.return != null) it.return();} finally {if (didErr) throw err;}} };}function _unsupportedIterableToArray(o, minLen) {if (!o) return;if (typeof o === "string") return _arrayLikeToArray(o, minLen);var n = Object.prototype.toString.call(o).slice(8, -1);if (n === "Object" && o.constructor) n = o.constructor.name;if (n === "Map" || n === "Set") return Array.from(n);if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);}function _arrayLikeToArray(arr, len) {if (len == null || len > arr.length) len = arr.length;for (var i = 0, arr2 = new Array(len); i < len; i++) {arr2[i] = arr[i];}return arr2;}function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {try {var info = gen[key](arg);var value = info.value;} catch (error) {reject(error);return;}if (info.done) {resolve(value);} else {Promise.resolve(value).then(_next, _throw);}}function _asyncToGenerator(fn) {return function () {var self = this,args = arguments;return new Promise(function (resolve, reject) {var gen = fn.apply(self, args);function _next(value) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);}function _throw(err) {asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);}_next(undefined);});};}var _default = {
-  install: function install(Vue, options) {
-    Vue.prototype.pageTitle = '加载中…'; // 可以自定义变量
-    Vue.prototype.selectRequestObjs = function () {// 给自定义方法起个名
-      var selectRequestObj = {};
-      var condition = {};
-      var order = {};
-      selectRequestObj['serviceName'] = '';
-      selectRequestObj['colNames'] = ['*'];
-      selectRequestObj['condition'] = [];
-      condition['colName'] = '';
-      condition['ruleType'] = '';
-      condition['value'] = '';
-      selectRequestObj.condition.push(condition);
-      selectRequestObj['order'] = [];
-      order['colName'] = '';
-      order['orderType'] = '';
-      selectRequestObj.order.push(order);
-      return selectRequestObj;
-    };
-
-
-    Vue.prototype.getKeyOrValue = function (obj, ke, val, name, icon) {// 给自定义方法起个名
-      var Obj = obj;
-      var item = Obj.map(function (item) {
-        var a = {};
-        a['key'] = item[ke];
-        a['value'] = item[val];
-        a['name'] = item[name];
-        // console.log('====a:' + a)
-        if (item[icon] === null) {
-          a['icon'] = '../../assets/img/icons/init/menu-icon.png';
-        } else {
-          a['icon'] = Vue.prototype.$api.downloadImg + item[icon];
-        }
-        return a;
-      });
-      return item;
-    };
-
-    Vue.prototype.menuSpliceArr = function (arr, num) {// 根据组件定义菜单分页封装
-      var len = arr.length;
-      var se = 0;
-      var newArr = [];
-      var c = Math.ceil(len / num);
-      this.spli = function (r, n) {
-        var a = r.slice(n * num, n * num + num);
-        return a;
-      };
-      this.newA = function (arr, num) {
-        if (se < c) {
-          var l = this.spli(arr, se);
-          newArr.push(l);
-          se++;
-          this.newA(arr, num);
-        } else {
-          return newArr;
-        }
-      };
-      this.newA(arr, num);
-      return newArr;
-    };
-
-    Vue.prototype.getQueryString = function (name) {
-      var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
-      var r = window.location.search.substr(1).match(reg);
-      if (r != null) return unescape(r[2]);return null;
-    };
-    Vue.prototype.colToLable = /*#__PURE__*/function () {var _ref = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee(serviceName, cols) {var req, data;return _regenerator.default.wrap(function _callee$(_context) {while (1) {switch (_context.prev = _context.next) {case 0:
-                // 通知columns查询label(中文名)
-                // let self = this
-                req = {
-                  serviceName: 'srvsys_service_columns_select',
-                  colNames: [
-                  'columns',
-                  'label'],
-
-                  condition: [
-                  {
-                    'colName': 'service_name',
-                    'value': serviceName,
-                    'ruleType': 'eq' },
-
-                  {
-                    'colName': 'columns',
-                    'value': cols,
-                    'ruleType': 'in' }],
-
-
-                  order: [
-                  {
-                    'colName': 'create_time',
-                    'orderType': 'asc' }] };_context.next = 3;return (
-
-
-
-                  this.$http.post(this.$api.select, req));case 3:data = _context.sent;return _context.abrupt("return",
-                data.data.data);case 5:case "end":return _context.stop();}}}, _callee, this);}));return function (_x, _x2) {return _ref.apply(this, arguments);};}();
-
-    Vue.prototype.getFooterBtns = function (e) {
-      // type : "duplicate" | edit | delete | detail
-      var btns = e;
-      var footerBtns = btns.filter(function (item) {return item.permission === true && (item.button_type === 'edit' || item.button_type === 'delete' || item.button_type === 'deletedraft' || item.button_type === 'closeproc' || item.button_type === 'deleteproc' || item.button_type === 'startproc' || item.button_type === 'customize');});
-      return footerBtns;
-    };
-    // Vue.prototype.loadingStatus=function(value){
-    // 	switch (value) {
-    // 		case 0:
-    // 			if(this.valno){
-    // 				this.status = 3
-    // 			}else{
-    // 				this.status = 2
-    // 			}
-    // 			break;
-    // 		case 10:
-    // 			this.status = 0
-    // 			break;
-    // 		default:
-    // 			this.status = 2;
-    // 			break;
-    // 	}
-    // }
-    Vue.prototype.selectOne = /*#__PURE__*/function () {var _ref2 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee2(srv, cond) {var self, req, response;return _regenerator.default.wrap(function _callee2$(_context2) {while (1) {switch (_context2.prev = _context2.next) {case 0: // 查询
-                self = this;
-
-                req = {};
-                req.serviceName = srv;
-                req.colNames = ['*'];
-                req.condition = [];
-                req.condition = cond;
-                // req.condition[1] = JSON.parse(JSON.stringify(condObj))
-                req.order = [
-                {
-                  'colName': 'id',
-                  'orderType': 'asc' }];_context2.next = 9;return (
-
-
-                  this.$http.post(self.$api.select, req));case 9:response = _context2.sent;if (!
-                response.data.data) {_context2.next = 14;break;}return _context2.abrupt("return",
-                response.data.data[0]);case 14:return _context2.abrupt("return",
-
-                '查询失败');case 15:case "end":return _context2.stop();}}}, _callee2, this);}));return function (_x3, _x4) {return _ref2.apply(this, arguments);};}();
-
-
-    Vue.prototype.showLoading = function (ifShow) {
-      var self = this;
-      if (ifShow) {
-        self.$store.dispatch({
-          type: 'showLoading' });
-
-      } else {
-        self.$store.dispatch({
-          type: 'hideLoading' });
-
-      }
-    };
-    Vue.prototype.getImageUrl = /*#__PURE__*/function () {var _ref3 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee3(fileNo) {var self, req, response, fileurl;return _regenerator.default.wrap(function _callee3$(_context3) {while (1) {switch (_context3.prev = _context3.next) {case 0:
-                self = this;
-                req = {};
-                req.serviceName = 'srvsys_file_select';
-                req.colNames = ['*'];
-                req.condition = [];
-                req.condition = [{
-                  'colName': 'file_no',
-                  'value': fileNo,
-                  'ruleType': 'eq' }];
-
-                req.page = null;
-                req.order = null;_context3.next = 10;return (
-                  this.$http.post(self.$api.select, req));case 10:response = _context3.sent;if (!
-                response.data.data) {_context3.next = 17;break;}
-                fileurl = response.data.data;
-                fileurl = fileurl.map(function (item) {
-                  item._url = self.$api.getFilePath + item.fileurl;
-                  return item;
-                });return _context3.abrupt("return",
-                fileurl);case 17:return _context3.abrupt("return",
-
-                '查询失败');case 18:case "end":return _context3.stop();}}}, _callee3, this);}));return function (_x5) {return _ref3.apply(this, arguments);};}();
-
-
-    Vue.prototype.getDispExps = function (item, data) {// 表达式校验
-      var result = true;
-      try {
-        var dispExps = item.disp_exps;
-        if (dispExps !== undefined && dispExps !== '' && dispExps !== null) {
-          // eslint-disable-next-line
-          result = eval(dispExps);
-        }
-      } catch (err) {
-        console.error('按钮表达式执行错误');
-      }
-      return result;
-    };
-    Vue.prototype.selectUserMenu = /*#__PURE__*/function () {var _ref4 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee4(cond) {var self, req, response;return _regenerator.default.wrap(function _callee4$(_context4) {while (1) {switch (_context4.prev = _context4.next) {case 0: // 查询菜单
-                self = this;
-
-                req = {};
-                req.serviceName = 'srvsys_user_menu_select';
-                req.colNames = ['*'];
-                req.condition = [];
-                req.condition = cond;
-                // req.condition[1] = JSON.parse(JSON.stringify(condObj))
-                req.order = [{}];
-                req.order[0].colName = 'seq';
-                req.order[0].orderType = 'asc';_context4.next = 11;return (
-                  this.$http.post(self.$api.selectByUser, req));case 11:response = _context4.sent;if (!
-                response.data.data) {_context4.next = 16;break;}return _context4.abrupt("return",
-                response.data.data);case 16:return _context4.abrupt("return",
-
-                '查询失败');case 17:case "end":return _context4.stop();}}}, _callee4, this);}));return function (_x6) {return _ref4.apply(this, arguments);};}();
-
-
-
-    Vue.prototype.deleteRow = /*#__PURE__*/function () {var _ref5 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee5(srv, cond) {var self, reqs, req, response;return _regenerator.default.wrap(function _callee5$(_context5) {while (1) {switch (_context5.prev = _context5.next) {case 0: // 删除数据
-                self = this;
-                reqs = [];
-                req = {};
-                // [{"serviceName":"srvplm_qrcode_html_delete","condition":[{"colName":"id","ruleType":"in","value":"23"}]}]
-                req.serviceName = srv;
-                req.condition = cond;
-                reqs.push(req);_context5.next = 8;return (
-                  this.$http.post(self.$api.delete, reqs));case 8:response = _context5.sent;if (!(
-                response.data.state === 'SUCCESS')) {_context5.next = 13;break;}return _context5.abrupt("return",
-                response.data.response);case 13:return _context5.abrupt("return",
-
-                '删除失败');case 14:case "end":return _context5.stop();}}}, _callee5, this);}));return function (_x7, _x8) {return _ref5.apply(this, arguments);};}();
-
-
-    Vue.prototype.getGridButton = function (datas, srv, conds) {
-      var self = this;
-      var d = datas;
-      var headbut = {
-        buttons: [],
-        menus: [],
-        showMenus: false };
-      // button type :  select | refresh | add | batch_delete | import | export | shrink | apply
-      var newData = d.filter(function (item) {return item.permission === true && (item.button_type === 'select' || item.button_type === 'add' || item.button_type === 'apply' || item.button_type === 'import' || item.button_type === 'export') && item.client_type.indexOf('APP') !== -1;});
-      var butType = newData.map(function (item) {return item.button_type;});
-      for (var i = 0; i < newData.length; i++) {
-        if (newData[i].button_type === 'select') {
-          var b = {
-            type: 'search',
-            url: '',
-            cfg: { serviceName: self.listCfgs.serviceName, colType: 'select', pageType: 'selectlist' } };
-
-          headbut.buttons.push(b);
-        } else if (newData[i].button_type === 'add') {
-          var _b = {
-            type: 'add',
-            url: '',
-            cfg: {
-              path: '/add',
-              query: {
-                serviceName: self.listCfgs.serviceName,
-                pageType: 'add',
-                title: newData[i].service_view_name,
-                foreignKey: conds } } };
-
-
-
-          headbut.buttons.push(_b);
-        } else if (newData[i].button_type === 'apply') {
-          var _b2 = {
-            type: 'add',
-            url: '',
-            cfg: {
-              path: '/add',
-              query: {
-                serviceName: self.listCfgs.serviceName,
-                pageType: 'apply',
-                title: newData[i].service_view_name } } };
-
-
-
-          headbut.buttons.push(_b2);
-        } else {
-          var _b3 = {
-            label: newData[i].button_name,
-            type: 'warn',
-            value: newData[i].button_type,
-            url: '',
-            cfg: [] };
-
-          headbut.menus.push(_b3);
-        }
-      }
-      if (headbut.menus.length > 0) {
-        headbut.showMenus = true;
-      } else {
-        headbut.showMenus = false;
-      }
-      self.$store.dispatch({
-        type: 'setHeadrBar',
-        data: headbut });
-
-      console.log(headbut, newData, butType);
-    };
-    Vue.prototype.toListDataCtr = /*#__PURE__*/function () {var _ref6 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee6(data, type, listType) {var typeCfg, resData, cols, labs, req,
-
-
-
-
-
-
-
-        colNamesArr, Obj;return _regenerator.default.wrap(function _callee6$(_context6) {while (1) {switch (_context6.prev = _context6.next) {case 0:colNamesArr = function _colNamesArr(e) {
-                  // cols
-                  var list = e;
-                  var arr = [];
-                  for (var i in list) {
-                    if (list[i] !== '') {
-                      arr.push(list[i]); // 属性
-                      // arr.push(obj[i]); //值
-                    }
-                  }
-                  return arr.join();
-                }; // 参数data:原始data; type:配置json
-                // 根据表格配置 构造data
-                // let self = this
-                typeCfg = type.type; // 表格类型
-                resData = data; // 原始data
-                cols = [];labs = [];req = [];cols = colNamesArr(type.content); // console.log('cols:')
-                // console.log(cols)
-                _context6.next = 9;return this.colToLable(type.serviceName, cols);case 9:labs = _context6.sent; // console.log(labs)
-                if (typeCfg === '1') {// let Obj = resData.map(function (item, index) {
-                  Obj = resData.map(function (item, index) {var columnsCfg = type.content;
-                    function colToL(c) {
-                      // cols
-                      var L = labs;
-                      var arr = L.filter(function (item) {return item.columns === c;});
-                      // console.log(arr)
-                      return arr[0] === undefined ? '' : arr[0].label;
-                    }
-
-                    var a = {
-                      src: item[columnsCfg.Comp_img],
-                      key: item[columnsCfg.p_key],
-                      id: item.id,
-                      title: {
-                        value: item[columnsCfg.Comp_title],
-                        label: item[columnsCfg.Comp_title_label] },
-
-                      content: [
-                      [
-                      {
-                        label: colToL(columnsCfg.Comp_subtitle),
-                        value: item[columnsCfg.Comp_subtitle] }],
-
-
-                      [
-                      {
-                        label: colToL(columnsCfg.Comp_content_row_left),
-                        value: item[columnsCfg.Comp_content_row_left] },
-
-                      {
-                        label: colToL(columnsCfg.Comp_content_row_right),
-                        value: item[columnsCfg.Comp_content_row_right] }]],
-
-
-
-                      footer: {
-                        linkText: '详情',
-                        columns: {
-                          label: colToL(columnsCfg.Comp_footer),
-                          value: item[columnsCfg.Comp_footer] } },
-
-
-                      data: item };
-
-                    // if(listType){
-                    //   if(listType === 'addchildlist'){}
-                    // }
-                    return a;
-                  });
-                  req = Obj;
-                }
-                // console.log(resData, req)
-                return _context6.abrupt("return", req);case 12:case "end":return _context6.stop();}}}, _callee6, this);}));return function (_x9, _x10, _x11) {return _ref6.apply(this, arguments);};}();
-
-    Vue.prototype.getColValidators = function (cols) {// 根据columns data 返回字段校验信息
-      if (cols) {
-        if (cols.validators !== null && cols.validators_message !== null) {
-          var str = cols.validators;
-          var msg = cols.validators_message;
-
-          var getStr = function getStr(val, state, end) {
-            if (val.length > state.length + end.length) {
-              var s = val.indexOf(state);
-              if (s === -1) {
-                return '';
-              } else {
-                var nval = val.slice(s + state.length, val.length);
-                var e = nval.indexOf(end);
-                var _str = nval.slice(0, e);
-                if (e === -1) {
-                  _str = nval.slice(0);
-                }
-                return _str;
-              }
-            } else {
-              return '';
-            }
-          };
-          var Validators = {};
-          var reg = /required/gi;
-          var msgs = getStr(msg, 'ngPattern=', ';');
-          msgs = msgs === '' ? cols.label + '信息有误' : msgs;
-          Validators['max'] = getStr(str, 'ngMaxlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMaxlength=', ';')) : null;
-          Validators['min'] = getStr(str, 'ngMinlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMinlength=', ';')) : null;
-          Validators['reg'] = getStr(str, 'ngPattern=', ';');
-          Validators['col_type'] = cols.bx_col_type;
-          Validators['required'] = reg.test(str);
-          Validators['msg'] = msgs;
-          Validators['isType'] = function (e) {
-            var reg = new RegExp(getStr(str, 'ngPattern=', ';'));
-            if (reg.test(e)) {
-              var obj = { valid: reg.test(e) };
-              return obj;
-            } else {
-              var _msgs = getStr(msg, 'ngPattern=', ';');
-              _msgs = _msgs === '' ? cols.label + '信息有误' : _msgs;
-              var _obj = { valid: reg.test(e), msg: _msgs };
-              return _obj;
-            }
-          };
-          return Validators;
-        } else {
-          var _Validators = {};
-          // let msgs = getStr(msg, 'ngPattern=', ';')
-          // msgs = msgs === '' ? cols.label + '信息有误' : msgs
-          _Validators['max'] = null;
-          _Validators['min'] = null;
-          _Validators['reg'] = '';
-          _Validators['col_type'] = cols.bx_col_type;
-          _Validators['required'] = false;
-          _Validators['msg'] = '';
-          _Validators['isType'] = function (e) {
-            var reg = new RegExp();
-            if (reg.test(e)) {
-              var obj = { valid: reg.test(e) };
-              return obj;
-            } else {
-              var _msgs2 = '';
-              _msgs2 = '';
-              var _obj2 = { valid: reg.test(e), msg: _msgs2 };
-              return _obj2;
-            }
-          };
-          return _Validators;
-        }
-      } else {
-        return false;
-      }
-    };
-    Vue.prototype.getValidators = function (vds, msg) {// 获取校验信息返回组件data
-      if (vds !== null && msg !== null) {
-        var str = vds;
-        var getStr = function getStr(val, state, end) {
-          if (val.length > state.length + end.length) {
-            var s = val.indexOf(state);
-            if (s === -1) {
-              return '';
-            } else {
-              var nval = val.slice(s + state.length, val.length);
-              var e = nval.indexOf(end);
-              var _str2 = nval.slice(0, e);
-              if (e === -1) {
-                _str2 = nval.slice(0);
-              }
-              return _str2;
-            }
-          } else {
-            return '';
-          }
-        };
-        var Validators = {};
-        var reg = /required/gi;
-        Validators['max'] = getStr(str, 'ngMaxlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMaxlength=', ';')) : null;
-        Validators['min'] = getStr(str, 'ngMinlength=', ';').length > 0 ? parseInt(getStr(str, 'ngMinlength=', ';')) : null;
-        Validators['reg'] = getStr(str, 'ngPattern=', ';');
-        Validators['required'] = reg.test(str);
-        Validators['msg'] = getStr(msg, 'ngPattern=', ';');
-        Validators['isType'] = function (e) {
-          var reg = new RegExp(getStr(str, 'ngPattern=', ';'));
-          if (reg.test(e)) {
-            var obj = { valid: reg.test(e) };
-            return obj;
-          } else {
-            var msgs = getStr(msg, 'ngPattern=', ';');
-            msgs = msgs === '' ? '信息有误' : msgs;
-            var _obj3 = { valid: reg.test(e), msg: msgs };
-            return _obj3;
-          }
-        };
-        return Validators;
-      } else {
-        return false;
-      }
-    };
-    Vue.prototype.getColData = /*#__PURE__*/function () {var _ref7 = _asyncToGenerator( /*#__PURE__*/_regenerator.default.mark(function _callee7(srv, srvType, pageType) {var self, len, serviceName, cols, nCols, req, condObj, response;return _regenerator.default.wrap(function _callee7$(_context7) {while (1) {switch (_context7.prev = _context7.next) {case 0: // 表单信息 srvType : add | update | list | detail | select
-                // use_type: detail | proclist | list | treelist | detaillist | selectlist | addchildlist | updatechildlist | procdetaillist | add | update
-                self = this;if (!(
-                srv && srvType && pageType)) {_context7.next = 38;break;}
-                len = srv.lastIndexOf('_');
-
-                serviceName = srv.slice(0, len) + '_';
-                if (srvType === 'list' || srvType === 'detail') {
-                  serviceName += 'select';
-                } else {
-                  serviceName += srvType;
-                }
-                cols = self.$store.getters.getSrvCol;
-                nCols = cols.filter(function (item) {return item.service_name === serviceName && item.use_type === pageType;});
-                console.log('=====1', nCols);if (!(
-                nCols.length === 0)) {_context7.next = 34;break;}
-                req = this.selectRequestObjs();
-                req.serviceName = 'srvsys_service_columnex_v2_select';
-                req.colNames = ['*'];
-                req.condition = [];
-                condObj = {};
-                condObj['colName'] = 'service_name';
-                condObj['ruleType'] = 'eq';
-                condObj['value'] = serviceName;
-                req.condition[0] = JSON.parse(JSON.stringify(condObj));
-                condObj['colName'] = 'use_type';
-                condObj['ruleType'] = 'eq';
-                condObj['value'] = pageType;
-                req.condition[1] = JSON.parse(JSON.stringify(condObj));
-                req.order[0].colName = 'seq';
-                req.order[0].orderType = 'asc';_context7.next = 26;return (
-                  this.$http.post(self.$api.select, req));case 26:response = _context7.sent;if (!
-                response.data.data) {_context7.next = 32;break;}
-                console.log('=====2', response.data.data);
-                response.data.data.use_type = pageType;
-                if ('rowButton' in response.data.data) {
-                  response.data.data._footerBtns = this.getFooterBtns(response.data.data.rowButton);
-                }
-                // self.$store.commit('setSrvCol', response.data.data)
-                // 第一次拿到，缓存
-                return _context7.abrupt("return", response.data.data);case 32:_context7.next = 36;break;case 34:
-
-
-                console.log('=====3', nCols);return _context7.abrupt("return",
-                nCols[0]);case 36:_context7.next = 39;break;case 38:return _context7.abrupt("return",
-
-
-                false);case 39:case "end":return _context7.stop();}}}, _callee7, this);}));return function (_x12, _x13, _x14) {return _ref7.apply(this, arguments);};}();
-
-
-
-    /**
-                                                                                                                                                                           * find descendant nodes with type and predict
-                                                                                                                                                                           * @param type
-                                                                                                                                                                           * @param predict
-                                                                                                                                                                           * @returns {*}
-                                                                                                                                                                           */
-    Vue.prototype.findAnyNodeByTypeAndPredict = function (type, predict) {
-      var nodeType = this.$options.name || this.$options._componentTag;
-      if (nodeType && nodeType === type && (!predict || predict(this))) {
-        return this;
-      } else {var _iterator = _createForOfIteratorHelper(
-        this.$children),_step;try {for (_iterator.s(); !(_step = _iterator.n()).done;) {var child = _step.value;
-            var match = child.findAnyNodeByTypeAndPredict(type, predict);
-            if (match) {
-              return match;
-            }
-          }} catch (err) {_iterator.e(err);} finally {_iterator.f();}
-        return null;
-      }
-    };
-  } };exports.default = _default;
-
-/***/ }),
-
-/***/ 18:
-/*!*********************************************************************************************!*\
-  !*** ./node_modules/@vue/babel-preset-app/node_modules/@babel/runtime/regenerator/index.js ***!
-  \*********************************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(/*! regenerator-runtime */ 19);
-
-/***/ }),
-
-/***/ 182:
-/*!***********************************************************************!*\
-  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/ajax.js ***!
-  \***********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = upload;function getError(action, option, xhr) {
-  var msg = "fail to post ".concat(action, " ").concat(xhr.status, "'");
-  var err = new Error(msg);
-  err.status = xhr.status;
-  err.method = 'post';
-  err.url = action;
-  return err;
-}
-
-function getBody(xhr) {
-  var text = xhr.responseText || xhr.response;
-  if (!text) {
-    return text;
-  }
-
-  try {
-    return JSON.parse(text);
-  } catch (e) {
-    return text;
-  }
-}
-
-function upload(option) {
-  if (typeof XMLHttpRequest === 'undefined') {
-    return;
-  }
-
-  var xhr = new XMLHttpRequest();
-  var action = option.action;
-
-  if (xhr.upload) {
-    xhr.upload.onprogress = function progress(e) {
-      if (e.total > 0) {
-        e.percent = e.loaded / e.total * 100;
-      }
-      option.onProgress(e);
-    };
-  }
-
-  var formData = new FormData();
-
-  if (option.data) {
-    Object.keys(option.data).map(function (key) {
-      formData.append(key, option.data[key]);
-    });
-  }
-
-  formData.append(option.filename, option.file);
-  xhr.onerror = function error(e) {
-    option.onError(e);
-  };
-
-  xhr.onload = function onload() {
-    if (xhr.status < 200 || xhr.status >= 300) {
-      return option.onError(getError(action, option, xhr), getBody(xhr));
-    }
-
-    option.onSuccess(getBody(xhr));
-  };
-
-  xhr.open('post', action, true);
-
-  if (option.withCredentials && 'withCredentials' in xhr) {
-    xhr.withCredentials = true;
-  }
-
-  var headers = option.headers || {};
-
-  // if (headers['X-Requested-With'] !== null) {
-  //   xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-  // }
-
-  for (var item in headers) {
-    if (headers.hasOwnProperty(item) && headers[item] !== null) {
-      xhr.setRequestHeader(item, headers[item]);
-    }
-  }
-  xhr.send(formData);
-}
-
-/***/ }),
-
-/***/ 183:
-/*!*********************************************************************************!*\
-  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/mixins/emitter.js ***!
-  \*********************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;function _broadcast(componentName, eventName, params) {
-  this.$children.forEach(function (child) {
-    var name = child.$options.name;
-
-    if (name === componentName) {
-      child.$emit.apply(child, [eventName].concat(params));
-    } else {
-      // todo 如果 params 是空数组，接收到的会是 undefined
-      _broadcast.apply(child, [componentName, eventName].concat([params]));
-    }
-  });
-}var _default =
-{
-  methods: {
-    dispatch: function dispatch(componentName, eventName, params) {
-      var parent = this.$parent || this.$root;
-      var name = parent.$options.name;
-
-      while (parent && (!name || name !== componentName)) {
-        parent = parent.$parent;
-
-        if (parent) {
-          name = parent.$options.name;
-        }
-      }
-      if (parent) {
-        parent.$emit.apply(parent, [eventName].concat(params));
-      }
-    },
-    broadcast: function broadcast(componentName, eventName, params) {
-      _broadcast.call(this, componentName, eventName, params);
-    } } };exports.default = _default;
 
 /***/ }),
 
@@ -24505,7 +24374,7 @@ function type(obj) {
 
 function flushCallbacks$1(vm) {
     if (vm.__next_tick_callbacks && vm.__next_tick_callbacks.length) {
-        if (Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
+        if (Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:flushCallbacks[' + vm.__next_tick_callbacks.length + ']');
@@ -24526,14 +24395,14 @@ function nextTick$1(vm, cb) {
     //1.nextTick 之前 已 setData 且 setData 还未回调完成
     //2.nextTick 之前存在 render watcher
     if (!vm.__next_tick_pending && !hasRenderWatcher(vm)) {
-        if(Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + vm._uid +
                 ']:nextVueTick');
         }
         return nextTick(cb, vm)
     }else{
-        if(Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG){
+        if(Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG){
             var mpInstance$1 = vm.$scope;
             console.log('[' + (+new Date) + '][' + (mpInstance$1.is || mpInstance$1.route) + '][' + vm._uid +
                 ']:nextMPTick');
@@ -24618,7 +24487,7 @@ var patch = function(oldVnode, vnode) {
     });
     var diffData = this.$shouldDiffData === false ? data : diff(data, mpData);
     if (Object.keys(diffData).length) {
-      if (Object({"VUE_APP_PLATFORM":"mp-weixin","NODE_ENV":"development","BASE_URL":"/"}).VUE_APP_DEBUG) {
+      if (Object({"NODE_ENV":"development","VUE_APP_PLATFORM":"mp-weixin","BASE_URL":"/"}).VUE_APP_DEBUG) {
         console.log('[' + (+new Date) + '][' + (mpInstance.is || mpInstance.route) + '][' + this._uid +
           ']差量更新',
           JSON.stringify(diffData));
@@ -25747,6 +25616,139 @@ internalMixin(Vue);
   })() || Function("return this")()
 );
 
+
+/***/ }),
+
+/***/ 205:
+/*!***********************************************************************!*\
+  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/ajax.js ***!
+  \***********************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = upload;function getError(action, option, xhr) {
+  var msg = "fail to post ".concat(action, " ").concat(xhr.status, "'");
+  var err = new Error(msg);
+  err.status = xhr.status;
+  err.method = 'post';
+  err.url = action;
+  return err;
+}
+
+function getBody(xhr) {
+  var text = xhr.responseText || xhr.response;
+  if (!text) {
+    return text;
+  }
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    return text;
+  }
+}
+
+function upload(option) {
+  if (typeof XMLHttpRequest === 'undefined') {
+    return;
+  }
+
+  var xhr = new XMLHttpRequest();
+  var action = option.action;
+
+  if (xhr.upload) {
+    xhr.upload.onprogress = function progress(e) {
+      if (e.total > 0) {
+        e.percent = e.loaded / e.total * 100;
+      }
+      option.onProgress(e);
+    };
+  }
+
+  var formData = new FormData();
+
+  if (option.data) {
+    Object.keys(option.data).map(function (key) {
+      formData.append(key, option.data[key]);
+    });
+  }
+
+  formData.append(option.filename, option.file);
+  xhr.onerror = function error(e) {
+    option.onError(e);
+  };
+
+  xhr.onload = function onload() {
+    if (xhr.status < 200 || xhr.status >= 300) {
+      return option.onError(getError(action, option, xhr), getBody(xhr));
+    }
+
+    option.onSuccess(getBody(xhr));
+  };
+
+  xhr.open('post', action, true);
+
+  if (option.withCredentials && 'withCredentials' in xhr) {
+    xhr.withCredentials = true;
+  }
+
+  var headers = option.headers || {};
+
+  // if (headers['X-Requested-With'] !== null) {
+  //   xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+  // }
+
+  for (var item in headers) {
+    if (headers.hasOwnProperty(item) && headers[item] !== null) {
+      xhr.setRequestHeader(item, headers[item]);
+    }
+  }
+  xhr.send(formData);
+}
+
+/***/ }),
+
+/***/ 206:
+/*!*********************************************************************************!*\
+  !*** D:/user/Documents/HBuilderProjects/PovertySurvey/common/mixins/emitter.js ***!
+  \*********************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });exports.default = void 0;function _broadcast(componentName, eventName, params) {
+  this.$children.forEach(function (child) {
+    var name = child.$options.name;
+
+    if (name === componentName) {
+      child.$emit.apply(child, [eventName].concat(params));
+    } else {
+      // todo 如果 params 是空数组，接收到的会是 undefined
+      _broadcast.apply(child, [componentName, eventName].concat([params]));
+    }
+  });
+}var _default =
+{
+  methods: {
+    dispatch: function dispatch(componentName, eventName, params) {
+      var parent = this.$parent || this.$root;
+      var name = parent.$options.name;
+
+      while (parent && (!name || name !== componentName)) {
+        parent = parent.$parent;
+
+        if (parent) {
+          name = parent.$options.name;
+        }
+      }
+      if (parent) {
+        parent.$emit.apply(parent, [eventName].concat(params));
+      }
+    },
+    broadcast: function broadcast(componentName, eventName, params) {
+      _broadcast.call(this, componentName, eventName, params);
+    } } };exports.default = _default;
 
 /***/ }),
 
@@ -26939,7 +26941,7 @@ internalMixin(Vue);
 
               console.log("点击了【有效】的公共编辑按钮", row);
               uni.navigateTo({
-                url: "/pages/public/formPage/formPage?params=" + JSON.stringify(_params) });
+                url: "/pages/formPage/formPage?params=" + JSON.stringify(_params) });
 
             } else {
               console.log("点击了【无效】的公共编辑按钮");
@@ -27012,7 +27014,7 @@ internalMixin(Vue);
 
                 console.log("点击了【有效】的公共编辑按钮", row);
                 uni.navigateTo({
-                  url: "/pages/public/formPage/formPage?params=" + JSON.stringify(params) });
+                  url: "/pages/formPage/formPage?params=" + JSON.stringify(params) });
 
               } else {
                 console.log("点击了【无效】的公共编辑按钮");
@@ -27042,6 +27044,7 @@ internalMixin(Vue);
               });
               break;
             case "detail":
+
               if (e.hasOwnProperty("row")) {
                 row = e.row;
                 var _params2 = {
@@ -27083,9 +27086,9 @@ internalMixin(Vue);
                     "ruleType": "in",
                     "value": row.id }],
 
-                  "serviceName": btn.service_name,
-                  "defaultVal": row };
-
+                  "serviceName": btn.service_name
+                  // "defaultVal": row
+                };
                 console.log("点击了【有效】的公共编辑按钮", row);
                 uni.navigateTo({
                   url: "/pages/formPage/formPage?params=" + JSON.stringify(_params3) });
@@ -27257,11 +27260,11 @@ internalMixin(Vue);
                         Vue.prototype.judgeClientEnviroment();
                         if (backUrl) {
                           uni.navigateTo({
-                            url: '/pages/public/accountExec/accountExec?backUrl=' + backUrl });
+                            url: '/pages/accountExec/accountExec?backUrl=' + backUrl });
 
                         } else {
                           uni.navigateTo({
-                            url: '/pages/public/accountExec/accountExec' });
+                            url: '/pages/accountExec/accountExec' });
 
                         }
                       } else {
@@ -27498,6 +27501,15 @@ fly.interceptors.request.use(function (request) {
     if (bxAuthTicket) {
       console.log('bxAuthTicket', bxAuthTicket);
       request.headers["bx_auth_ticket"] = bxAuthTicket;
+    } else {
+
+
+
+
+
+
+      _vue.default.prototype.wxLogin();
+
     }
   }
   //打印出请求体
@@ -27516,7 +27528,14 @@ function (res) {
   //只将请求结果的data字段返回
   if (res.data.resultCode === "0011") {//未登录
     uni.setStorageSync('is_login', false);
-    console.log('login_user_info', login_user_info);
+
+
+
+
+
+
+    _vue.default.prototype.wxLogin();
+
     // return res
   } else if (res.data.resultCode === '0000' && res.data.state === 'FAILURE') {
     // 没有访问权限

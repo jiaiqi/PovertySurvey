@@ -5,12 +5,14 @@ let remoteAddress = {
 	ssoAddress: 'http://sso.100xsys.cn',
 	serviceAddress: 'https://srvms.100xsys.cn', // http://login.100xsys.cn 接口地址srvms.100xsys.cn
 	frontEndAddress: 'http://wx2.100xsys.cn',
+	backEndAddress:"https://login.100xsys.cn", //后台线上地址
 	bx_auth_ticket: "f28b318d-ad39-476e-adbb-9f69c2edcefb",
 	onTicket: false
 }
 let ENV = {
 	homePath:'/pages/home/home?website_no=WS2020080315200011',
 	frontEndAddress: remoteAddress.frontEndAddress, //前端线上地址
+	backEndAddress:remoteAddress.backEndAddress, //后台线上地址
 	appNo: {
 		// wxmp: 'APPNO20200214122021', //百想助理微信小程序 APPNO20200214122021
 		wxmp: 'APPNO20200731153421', //生活能力评估微信小程序 APPNO20200214122021

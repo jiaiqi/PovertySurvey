@@ -1,6 +1,6 @@
 <template>
-	<view class="bg-white" style="width:100%;" v-if="allField.length > 0">
-		<view v-for="(item, index) in allField" :key="index">
+	<view class="bg-white form-box" style="width:100%;" v-if="allField.length > 0">
+		<view v-for="(item, index) in allField" :key="index" class="form-box-item">
 			<formItem
 				:procData="procData"
 				:field="item"
@@ -217,7 +217,6 @@ export default {
 				}
 			});
 			// return
-
 			if (e.bx_col_type === 'fk' && e.colData && typeof e.colData === 'object' && Array.isArray(e.colData) !== true && Object.keys(e.colData).length > 0) {
 				//冗余
 				this.allField.forEach(item => {
@@ -344,4 +343,12 @@ export default {
 };
 </script>
 
-<style lang="less"></style>
+<style lang="scss" scoped>
+	.form-box{
+		display: flex;
+		flex-wrap: wrap;
+		.form-box-item{
+			min-width: 50%;
+		}
+	}
+</style>

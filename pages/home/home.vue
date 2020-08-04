@@ -161,7 +161,7 @@ export default {
 				destApp: 'daq'
 			};
 			uni.navigateTo({
-				url: '/pages/specific/article/article?query=' + encodeURIComponent(JSON.stringify(query))
+				url: '/pages/article/article?query=' + encodeURIComponent(JSON.stringify(query))
 			});
 		},
 		async getPageItemList() {

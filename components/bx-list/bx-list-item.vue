@@ -1,5 +1,5 @@
 <template>
-	<view class="list-item-wrap  bg-white">
+	<view class="list-item-wrap">
 		<view class="list-item flex" v-if="viewType === 'normal'">
 			<image
 				class="main-image"
@@ -85,26 +85,59 @@
 				</view>
 			</view>
 			<view class="content-box flex-twice" v-else>
-				<view class="title" v-if="goodsData.title" @click="listItemClick">{{ goodsData.title }}</view>
+				<view class="title content-item" v-if="listData.title" @click="listItemClick">
+					<text v-if="listData.title.label">{{ listData.title.label }}:</text>
+					{{ listData.title.value ? listData.title.value : '' }}
+				</view>
+				<view class="title-tip content-item" v-if="listData.subtitle" @click="listItemClick">
+					<text v-if="listData.subtitle.label">{{ listData.subtitle.label }}:</text>
+					{{ listData.subtitle.value ? listData.subtitle.value : '' }}
+				</view>
+				<view class="context " v-if="listData.content" @click="listItemClick">
+					<view class="content content-item">
+						<text v-if="listData.content.label">{{ listData.content.label }}:</text>
+						{{ listData.content.value ? listData.content.value : '' }}
+					</view>
+					<view class="footer content-item" v-if="listData.footer" @click="listItemClick">
+						<text v-if="listData.footer.label">{{ listData.footer.label }}:</text>
+						{{ listData.footer.value ? listData.footer.value : '' }}
+					</view>
+				</view>
+				<view class="buttons" v-if="showButton && showButton == 'true' && rowButtons.length > 0">
+					<view v-if="showButton && showButton == 'true'" class="foot-button">
+						<text
+							v-if="deRowButDisplay(itemData, item) && !detailList && item.disp_show !== false"
+							class="cu-btn round sm text-blue line-blue"
+							:class="'cuIcon-' + item.button_type"
+							v-for="item in rowButtons"
+							:key="item.id"
+							@click="footBtnClick(item)"
+						>
+							{{ item.button_name }}
+						</text>
+						<text v-if="detailList" class="text-gray" :class="'cuIcon-more'"></text>
+					</view>
+				</view>
+				<!-- <view class="title" v-if="goodsData.title" @click="listItemClick">{{ goodsData.title }}</view>
 				<view class="title-tip" v-if="goodsData.tip" @click="listItemClick">
-					<text class="leftWord" v-if="tempWord&&tempWord.tip">{{ tempWord.tip }}:</text>
+					<text class="leftWord" v-if="tempWord && tempWord.tip">{{ tempWord.tip }}:</text>
 					{{ goodsData.tip }}
 				</view>
 				<view class="content" v-if="goodsData.price" @click="listItemClick">
 					<view class="numbers">
-						<!-- <text class="unit" v-if="!isNaN(Number(goodsData.price))">￥</text> -->
 						{{ goodsData.price }}
 					</view>
 				</view>
 				<view class="content" v-if="goodsData.number" @click="listItemClick">
 					<view class="number-item">
-						<text class="leftWord" v-if="tempWord&&tempWord.number">{{ tempWord.number }}:</text>
+						<text class="leftWord" v-if="tempWord && tempWord.number">{{ tempWord.number }}:</text>
 						{{ goodsData.number }}
 					</view>
-				</view>
-				<view class="footer">
+				</view> -->
+
+				<!-- <view class="footer">
 					<view class="foot-name" v-show="goodsData.footer" @click="listItemClick">
-						<text class="leftWord" v-if="tempWord&&tempWord.footer">{{ tempWord.footer }}:</text>
+						<text class="leftWord" v-if="tempWord && tempWord.footer">{{ tempWord.footer }}:</text>
 						{{ goodsData.footer }}
 					</view>
 					<view v-if="showButton && showButton == 'true'" class="foot-button">
@@ -133,7 +166,7 @@
 						</button>
 						<text v-if="detailList" class="text-gray" :class="'cuIcon-more'"></text>
 					</view>
-				</view>
+				</view> -->
 			</view>
 		</view>
 	</view>
@@ -153,6 +186,14 @@ export default {
 				price: '',
 				footer: ''
 			},
+			listTemp: {
+				img: 'photo',
+				title: 'item_name',
+				subtitle: 'create_time',
+				content: 'item_no',
+				footer: 'div_type'
+			},
+			listData: {},
 			rowButtons: [],
 			bx_auth_ticket: uni.getStorageSync('bx_auth_ticket')
 		};
@@ -302,6 +343,10 @@ export default {
 				return {};
 			}
 		},
+		listConfig: {
+			type: Object,
+			default: () => {}
+		},
 		listType: {
 			type: String, //列表类型 list||proc
 			default: 'list'
@@ -326,6 +371,25 @@ export default {
 						this.goodsData[item] = this.itemData[arr2[index]];
 					});
 					this.goodsData['img'] = '';
+					let srvCols = this.deepClone(newVal);
+					let listTemp = this.listTemp;
+					if (this.listConfig && this.listConfig.more_config && this.listConfig.more_config.listTemp) {
+						listTemp = this.listConfig.more_config.listTemp;
+					}
+					if (srvCols && Array.isArray(srvCols) && srvCols.length > 0) {
+						srvCols.forEach(col => {
+							Object.keys(listTemp).forEach(key => {
+								if (col.columns === listTemp[key]) {
+									let obj = {
+										label: col.label,
+										value: this.itemData[col.columns]
+									};
+									this.listData[key] = obj;
+									this.$set(this.listData, key, obj);
+								}
+							});
+						});
+					}
 				} else {
 					newVal.forEach(item => {
 						if (item.col_type === 'Dict' && Array.isArray(item.option_list_v2)) {
@@ -352,32 +416,6 @@ export default {
 					return;
 				}
 				let rowButton = JSON.parse(JSON.stringify(newValue));
-				if (item.create_user === item.openid && item.is_benren && item.is_benren !== '本人信息') {
-					//create_user和openid相同 说明还未分享或分享后被分享人还未确认信息
-					let noShareBtn = rowButton.filter(btn => btn.button_name === '邀请' && btn.client_type === 'MP-WEIXIN').length === 0;
-					if (noShareBtn) {
-						let shareBtn = {
-							page_type: '流程列表',
-							button_type: 'applyProc',
-							client_type: 'MP-WEIXIN',
-							id: 10086,
-							page_area: '表格行按钮',
-							seq: 1,
-							button_name: '邀请',
-							service_name: 'srvzhxq_syrk_select',
-							create_user_disp: 'admin',
-							service_view_name: '实有人口查询',
-							always_show: false,
-							more_config: null,
-							permission: true,
-							biz_path: '/syscore/',
-							application: 'zhxq',
-							is_public: true,
-							create_user: 'admin'
-						};
-						rowButton.unshift(shareBtn);
-					}
-				}
 				rowButton.forEach(btn => {
 					// if (btn.disp_exps) {
 					let data = item;
@@ -401,6 +439,22 @@ export default {
 			immediate: true,
 			handler(newValue, oldValue) {
 				let self = this;
+				// let srvCols = this.deepClone(this.srv_cols);
+				// let listTemp = this.listTemp;
+				// if (srvCols && Array.isArray(srvCols && srvCols.length > 0)) {
+				// 	srvCols.forEach(col => {
+				// 		Object.keys(listTemp).forEach(key => {
+				// 			if (col.columns === listTemp[key]) {
+				// 				let obj = {
+				// 					label: col.label,
+				// 					value: newValue[col.columns]
+				// 				};
+				// 				this.listData[key] = obj;
+				// 				this.$set(this.listData, key, obj);
+				// 			}
+				// 		});
+				// 	});
+				// }
 				if (newValue[this.viewTemp.img]) {
 					this.getPicture(newValue[this.viewTemp.img]).then(url => {
 						this.goodsData.img = url;
@@ -472,8 +526,11 @@ export default {
 <style lang="scss" scoped>
 .list-item-wrap {
 	width: auto;
-	margin: 10rpx 0;
 	box-sizing: border-box;
+	border-bottom: dashed 1px #efefef;
+	background-color: #fff;
+	width: calc(100%);
+	margin: 10rpx auto;
 	.list-item {
 		// width: calc(100% - 40upx);
 		display: flex;
@@ -494,8 +551,7 @@ export default {
 			max-width: 100%;
 			display: flex;
 			flex-wrap: wrap;
-			// flex: 1;
-			// padding-right: 10px;
+			flex-direction: column;
 			color: #999;
 			.title {
 				width: 60%;
@@ -543,26 +599,16 @@ export default {
 				white-space: nowrap;
 				display: flex;
 				align-items: center;
-				margin-top: 20upx;
 				min-width: 50%;
 			}
-			.content {
+
+			.context {
 				text-overflow: ellipsis;
 				white-space: nowrap;
-				.numbers {
-					color: #e93b3d;
-					line-height: 40upx;
-					margin-top: 20upx;
-					font-size: 36upx;
-				}
-				.number-item {
-					margin-top: 20rpx;
-					line-height: 50rpx;
-					font-size: 30rpx;
-				}
-
-				.unit {
-					font-size: 30upx;
+				display: flex;
+				justify-content: space-between;
+				.content {
+					flex: 1;
 				}
 				&.proc-content {
 					display: flex;
@@ -594,7 +640,7 @@ export default {
 					}
 				}
 			}
-			.footer {
+			.buttons {
 				display: flex;
 				justify-content: space-between;
 				min-height: 80upx;
@@ -611,22 +657,6 @@ export default {
 					padding-right: 28upx;
 					line-height: 44upx;
 					flex: 1;
-					// &::after {
-					//   content: '';
-					//   display: block;
-					//   width: 8px;
-					//   height: 8px;
-					//   border-top: 1px solid #999;
-					//   border-left: 1px solid #999;
-					//   transform-origin: 50%;
-					//   transform: rotate(135deg);
-					//   position: absolute;
-					//   width: 6px;
-					//   height: 6px;
-					//   right: 5px;
-					//   top: 50%;
-					//   margin-top: -3px;
-					// }
 				}
 				.footer-btn {
 					// min-width: 60%;

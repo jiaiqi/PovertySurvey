@@ -13,7 +13,7 @@
       >
         <view class="menu-pic bg-blue" @click="clickMenu(item)" v-if="!item.icon&&item[menuTemplate['lableCol']]">{{ item[menuTemplate['lableCol']].slice(0, 2) }}</view>
         <view class="menu-pic" @click="clickMenu(item)" v-if="item.icon">
-          <image class="picture" :src="$api.backEndAddress + '/main/images/appicon/' + item.icon" mode=""></image>
+          <image class="picture" :src="backendUrl+ '/main/images/appicon/' + item.icon" mode=""></image>
         </view>
         <view class="label">{{ item[menuTemplate['lableCol']] }}</view>
       </view>
@@ -38,7 +38,7 @@
           >
             <view class="menu-pic bg-blue" @click="clickMenu(item)" v-if="!item.icon">{{ item[menuTemplate['lableCol']].slice(0, 2) }}</view>
             <view class="menu-pic" @click="clickMenu(item)" v-if="item.icon">
-              <image class="picture" :src="$api.backEndAddress + '/main/images/appicon/' + item.icon" mode=""></image>
+              <image class="picture" :src="backendUrl+ '/main/images/appicon/' + item.icon" mode=""></image>
             </view>
             <view class="label">{{ item[menuTemplate['lableCol']] }}</view>
           </view>
@@ -54,6 +54,7 @@ export default {
     return {
       // menuList:[],
       // menus:[]
+			backendUrl:""
     };
   },
   props: {
@@ -94,6 +95,7 @@ export default {
       deep: true,
       immediate: true,
       handler(newValue, oldValue) {
+				this.backendUrl = this.$api.backEndAddress
         if (Array.isArray(newValue) && newValue.length > 8) {
           // this.menus = newValue.slice(0,8)
         }

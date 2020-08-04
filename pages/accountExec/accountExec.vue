@@ -445,8 +445,6 @@ export default {
 					}
 				}
 				console.log('回调url', url);
-				// alert("回调url",uni.getStorageSync("isLogin"))
-	
 				return url;
 			} else {
 				return false;

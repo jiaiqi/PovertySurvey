@@ -1,5 +1,5 @@
 <template>
-	<view>
+	<view class="bx-form-item">
 		<view class="cu-form-group itemwrap" v-if="fieldData.display" :class="{ 'form-detail': pageFormType === 'detail' }">
 			<view class="title" :class="!valid.valid ? 'valid_error' : ''">
 				<text class="text-red text-shadow" v-show="fieldData.isRequire">*</text>
@@ -15,7 +15,7 @@
           v-html="JSON.parse(JSON.stringify(fieldData.value).replace(/\<img/gi, '<img width=100% height=auto '))"
           v-if="pageFormType === 'detail' && (fieldData.type === 'snote' || fieldData.type === 'Note')"
         ></view> -->
-				<view class="" v-else-if="pageFormType === 'detail' && fieldData.type === 'images'">
+				<view class="detail-image" v-else-if="pageFormType === 'detail' && fieldData.type === 'images'">
 					<image
 						v-if="fieldData.type === 'images'"
 						v-for="(item, index) in imagesUrl"
@@ -1477,19 +1477,37 @@ uni-text.input-icon {
 .cu-form-group.form-detail {
 	display: flex;
 	flex-direction: row;
-	border-bottom: 1px dashed #efefef;
-	min-height: 50px;
-	.title {
-		flex: 1;
-		opacity: 0.5;
+	// border-bottom: 1px dashed #efefef;
+	min-height: 30px;
+	padding:0rpx 20rpx;
+	align-items: center;
+	.title{
+		width: auto;
+		padding: 0 10rpx;
+		margin: 0;
 	}
-	.detail-text {
-		flex: 2;
-		height: auto;
-		margin: 10px 0 0px;
-		line-height: 60rpx;
-		overflow: scroll;
+	.detail-text{
+		width: auto;
+		.detail-image{
+			// min-width: 50vw;
+			.cu-avatar{
+				width: 80px;
+				height: 100px;
+			}
+		}
+			
 	}
+	// .title {
+	// 	flex: 1;
+	// 	opacity: 0.5;
+	// }
+	// .detail-text {
+	// 	flex: 2;
+	// 	height: auto;
+	// 	margin: 10px 0 0px;
+	// 	line-height: 60rpx;
+	// 	overflow: scroll;
+	// }
 }
 .cu-card.article > .cu-item .title {
 	line-height: normal;

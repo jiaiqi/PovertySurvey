@@ -7,26 +7,42 @@
 			:defaultCondition="defaultCondition"
 			:BxformType="type"
 			:fields="fields"
+			v-if="fields.length>0"
 			@changeFieldModel="changeFieldModel"
 			:moreConfig="colsV2Data && colsV2Data.more_config ? colsV2Data.more_config : null"
 		></bxform>
 		<bxButtons :buttons="buttons" @on-button-change="onButton($event)" v-if="buttons && buttons.length > 0"></bxButtons>
 		<!-- <button class="bg-green cu-btn lg">查看列表</button> -->
-		<view class="sublist-content">
+		<view class="sublist-content" v-if="type === 'detail' && childService && childService.length > 0">
 			<!-- <view class="sublist-content" v-if="type === 'detail'&&hasChildService"> -->
 			<view class="sublist-box" v-if="showSublist">
-				<view class="child-service bg-blue" v-for="item in childService" :key="item.service_name" @click="toChildList(item)">
-					{{ item.foreign_key.section_name }}({{ item.childData.data.length }})
+				<view class="child-service" v-for="item in childService" :key="item.service_name">
+					<button
+						class="cu-btn bg-blue"
+						:class="{
+							'bg-grey':
+								item.foreign_key &&
+								item.foreign_key.more_config &&
+								item.foreign_key.more_config.statusColor &&
+								item.foreign_key.more_config.statusColor.noStart &&
+								item.childData.data &&
+								item.childData.data.length === 0
+						}"
+						v-if="item.foreign_key.section_name && item.childData && item.childData.data && Array.isArray(item.childData.data)"
+						@click="toChildList(item)"
+					>
+						<text class="section_name">{{ item.foreign_key.section_name }}({{ item.childData.data.length }})</text>
+					</button>
 				</view>
 			</view>
-			<button class="cu-btn  bg-blue margin-tb-sm" v-if="!showSublist&&hasChildService" @click="showSublist = !showSublist">
+			<!-- 	<button class="cu-btn  bg-blue margin-tb-sm" v-if="!showSublist&&hasChildService" @click="showSublist = !showSublist">
 				展开子表
 				<text class="lg text-white cuIcon-down margin-left-xs"></text>
 			</button>
 			<button class="cu-btn  bg-blue margin-tb-sm" v-if="showSublist" @click="showSublist = !showSublist">
 				收起子表
 				<text class="lg text-white cuIcon-top margin-left-xs"></text>
-			</button>
+			</button> -->
 		</view>
 	</view>
 </template>
@@ -49,7 +65,7 @@ export default {
 			formData: {},
 			childService: [], // 子表
 			hasChildService: false, //是否拥有子表
-			showSublist: false //显示子表
+			showSublist: true //显示子表
 		};
 	},
 	computed: {
@@ -68,7 +84,6 @@ export default {
 					data[item['column']] = item['value'];
 				});
 				let fieldModel = data;
-				console.log(data, 'getDetailfieldModel');
 			}
 
 			buttons.forEach(btn => {
@@ -141,8 +156,9 @@ export default {
 		} else if (option.hasOwnProperty('params')) {
 			this.serviceName = this.params.serviceName;
 			this.type = this.params.type;
+			this.getDetailfieldModel();
 			this.condition = this.params.condition;
-			this.defaultVal = this.params.defaultVal;
+			// this.defaultVal = this.params.defaultVal;
 			let cond = [];
 			if (this.params.cond && Array.isArray(this.params.cond)) {
 				cond = this.params.cond;
@@ -159,7 +175,7 @@ export default {
 					console.log(e);
 				}
 			}
-			this.getFieldsV2();
+			this.getFieldsV2(this.condition);
 		} else {
 			uni.showToast({
 				title: '加载错误',
@@ -170,9 +186,56 @@ export default {
 
 	methods: {
 		toChildList(e) {
-			uni.navigateTo({
-				url: '/pages/list/list?serviceName=' + e.service_name
-			});
+			let data = this.deepClone(e);
+			let condition = [{ colName: e.foreign_key.column_name, ruleType: 'eq', value: this.formData[e.foreign_key.referenced_column_name] }];
+			if (e.foreign_key && e.foreign_key.more_config && e.foreign_key.more_config.targetType) {
+				let targetType = e.foreign_key.more_config.targetType;
+				if (targetType === 'list') {
+					uni.navigateTo({
+						url: '/pages/list/list?serviceName=' + e.service_name + '&cond=' + JSON.stringify(condition)
+					});
+				} else if (targetType === 'detail') {
+					if (e.childData && e.childData.data && e.childData.data.length > 0) {
+						let params = {
+							type: 'detail',
+							condition: [
+								{
+									colName: 'id',
+									ruleType: 'in',
+									value: e.childData.data[0].id
+								}
+							],
+							serviceName: e.service_name.replace('_select', '_add')
+							// "defaultVal": row
+						};
+						uni.navigateTo({
+							url: '/pages/formPage/formPage?params=' + JSON.stringify(params)
+						});
+					} else {
+						uni.showModal({
+							title:"提示",
+							content:"暂无数据，是否跳转到数据添加页面",
+							success(res) {
+								if(res.confirm){
+									let params = {
+										type: 'add',
+										serviceName: e.service_name.replace('_select', '_add')
+										// "defaultVal": row
+									};
+									uni.navigateTo({
+										url: '/pages/formPage/formPage?params=' + JSON.stringify(params)
+									});
+								}
+							}
+						})
+					
+					}
+				}
+			} else {
+				uni.navigateTo({
+					url: '/pages/list/list?serviceName=' + e.service_name + '&cond=' + JSON.stringify(condition)
+				});
+			}
 		},
 		changeFieldModel(e) {
 			if (e) {
@@ -182,13 +245,12 @@ export default {
 		async selectList(item) {
 			let app = uni.getStorageSync('activeApp');
 			let url = this.getServiceUrl(app, item.service_name, 'select');
-			let formData = this.params.defaultVal;
+			let formData = this.defaultVal;
 			if (item.foreign_key && item.foreign_key.referenced_column_name && formData[item.foreign_key.referenced_column_name]) {
 				let req = {
 					serviceName: item.service_name,
 					colNames: ['*'],
 					condition: [{ colName: item.foreign_key.column_name, ruleType: 'eq', value: formData[item.foreign_key.referenced_column_name] }],
-					relation_condition: {},
 					page: { pageNo: 1, rownumber: 5 },
 					order: []
 				};
@@ -212,20 +274,38 @@ export default {
 				this.childService.forEach((item, index) => {
 					this.selectList(item).then(res => {
 						item.childData = res;
+						if (item.foreign_key && item.foreign_key.more_config && typeof item.foreign_key.more_config === 'string') {
+							try {
+								item.foreign_key.more_config = JSON.parse(item.foreign_key.more_config);
+							} catch (e) {
+								//TODO handle the exception
+								console.log(e);
+							}
+						}
 						this.$set(this.childService, index, item);
 					});
 				});
+				this.childService.filter(item => item.childData);
 			}
 			if (!this.navigationBarTitle) {
 				uni.setNavigationBarTitle({
 					title: colVs.service_view_name
 				});
 			}
+			if (colVs.more_config) {
+				if (typeof colVs.more_config === 'string') {
+					try {
+						colVs.more_config = JSON.parse(colVs.more_config);
+					} catch (e) {
+						//TODO handle the exception
+						console.log(e);
+					}
+				}
+			}
 			this.colsV2Data = colVs;
 			let self = this;
 			switch (this.type) {
 				case 'update':
-				//
 				//       this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.params.defaultVal);
 				//       break;
 				case 'add':
@@ -273,10 +353,28 @@ export default {
 					this.fields = colVs._fieldInfo;
 					break;
 				case 'detail':
-					this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.params.defaultVal);
+					this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.defaultVal);
 					break;
 				default:
 					break;
+			}
+		},
+		async getDetailfieldModel() {
+			let params = this.params;
+			let app = uni.getStorageSync('activeApp');
+			let url = this.getServiceUrl(app, params.serviceName, 'select');
+			const req = {
+				colNames: ['*'],
+				condition: params.condition,
+				page: { pageNo: 1, rownumber: 5 },
+				serviceName: params.serviceName
+			};
+			let res = await this.$http.post(url, req);
+			if (res.data.state === 'SUCCESS' && res.data.data.length > 0) {
+				this.defaultVal = res.data.data[0];
+				return res.data.data[0];
+			} else {
+				return false;
 			}
 		},
 		async onButton(e) {
@@ -397,35 +495,6 @@ export default {
 					});
 					break;
 			}
-		},
-		async getUserInfo() {
-			let user_no = uni.getStorageSync('basics_info').picp;
-			let urls = this.getServiceUrl('zhxq', 'srvzhxq_syrk_select', 'select');
-			let reqs = {
-				serviceName: 'srvzhxq_syrk_select',
-				colNames: ['*'],
-				condition: [
-					{
-						colName: 'gmsfhm',
-						ruleType: 'eq',
-						value: user_no
-					},
-					{
-						colName: 'proc_status',
-						ruleType: 'eq',
-						value: '完成'
-					},
-					{
-						colName: 'status',
-						ruleType: 'eq',
-						value: '有效'
-					}
-				]
-				// order: [{ colName: 'seq', orderType: 'asc' }] ,
-			};
-			let ress = await this.$http.post(urls, reqs);
-			console.log('------------', ress);
-			return ress.data.data[0];
 		}
 	}
 };
@@ -437,15 +506,17 @@ export default {
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
-	margin: 50rpx 20rpx 0;
+	margin: 50rpx 20rpx;
 	.sublist-box {
 		width: 100%;
 		display: flex;
 		border: 1px dashed #efefef;
-		justify-content: space-around;
+		justify-content: space-between;
 		padding: 30rpx 20rpx;
+		flex-wrap: wrap;
 		.child-service {
-			width: 50%;
+			// width: 50%;
+			width: calc(50% - 20rpx);
 			height: 80rpx;
 			display: flex;
 			justify-content: center;
@@ -453,6 +524,17 @@ export default {
 			border-radius: 10rpx;
 			margin: 10rpx;
 			text-align: center;
+			font-size: 12px;
+			button {
+				flex: 1;
+			}
+			.section_name {
+				font-size: 12px;
+				padding: 10rpx;
+				overflow: hidden;
+				white-space: nowrap;
+				text-overflow: ellipsis;
+			}
 		}
 	}
 }

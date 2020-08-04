@@ -1179,7 +1179,7 @@ export default {
 							}
 							console.log("点击了【有效】的公共编辑按钮", row)
 							uni.navigateTo({
-								url: "/pages/public/formPage/formPage?params=" + JSON.stringify(params)
+								url: "/pages/formPage/formPage?params=" + JSON.stringify(params)
 							})
 						} else {
 							console.log("点击了【无效】的公共编辑按钮")
@@ -1252,7 +1252,7 @@ export default {
 								}
 								console.log("点击了【有效】的公共编辑按钮", row)
 								uni.navigateTo({
-									url: "/pages/public/formPage/formPage?params=" + JSON.stringify(params)
+									url: "/pages/formPage/formPage?params=" + JSON.stringify(params)
 								})
 							} else {
 								console.log("点击了【无效】的公共编辑按钮")
@@ -1282,6 +1282,7 @@ export default {
 							})
 							break;
 						case "detail":
+						
 						if (e.hasOwnProperty("row")) {
 							row = e.row
 							let params = {
@@ -1324,7 +1325,7 @@ export default {
 										"value": row.id
 									}],
 									"serviceName": btn.service_name,
-									"defaultVal": row
+									// "defaultVal": row
 								}
 								console.log("点击了【有效】的公共编辑按钮", row)
 								uni.navigateTo({
@@ -1497,11 +1498,11 @@ export default {
 														Vue.prototype.judgeClientEnviroment()
 														if (backUrl) {
 															uni.navigateTo({
-																url: '/pages/public/accountExec/accountExec?backUrl=' + backUrl
+																url: '/pages/accountExec/accountExec?backUrl=' + backUrl
 															})
 														} else {
 															uni.navigateTo({
-																url: '/pages/public/accountExec/accountExec'
+																url: '/pages/accountExec/accountExec'
 															})
 														}
 													} else {
@@ -1572,11 +1573,11 @@ export default {
 									Vue.prototype.judgeClientEnviroment()
 									if (backUrl) {
 										uni.navigateTo({
-											url: '/pages/public/accountExec/accountExec?backUrl=' + backUrl
+											url: '/pages/accountExec/accountExec?backUrl=' + backUrl
 										})
 									} else {
 										uni.navigateTo({
-											url: '/pages/public/accountExec/accountExec'
+											url: '/pages/accountExec/accountExec'
 										})
 									}
 								} else {

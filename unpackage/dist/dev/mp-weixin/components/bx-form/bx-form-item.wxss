@@ -143,23 +143,23 @@ uni-text.input-icon.data-v-4205beb4 {
   -webkit-box-direction: normal;
   -webkit-flex-direction: row;
           flex-direction: row;
-  border-bottom: 1px dashed #efefef;
-  min-height: 50px;
+  min-height: 30px;
+  padding: 0rpx 20rpx;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+          align-items: center;
 }
 .cu-form-group.form-detail .title.data-v-4205beb4 {
-  -webkit-box-flex: 1;
-  -webkit-flex: 1;
-          flex: 1;
-  opacity: 0.5;
+  width: auto;
+  padding: 0 10rpx;
+  margin: 0;
 }
 .cu-form-group.form-detail .detail-text.data-v-4205beb4 {
-  -webkit-box-flex: 2;
-  -webkit-flex: 2;
-          flex: 2;
-  height: auto;
-  margin: 10px 0 0px;
-  line-height: 60rpx;
-  overflow: scroll;
+  width: auto;
+}
+.cu-form-group.form-detail .detail-text .detail-image .cu-avatar.data-v-4205beb4 {
+  width: 80px;
+  height: 100px;
 }
 .cu-card.article > .cu-item .title.data-v-4205beb4 {
   line-height: normal;
