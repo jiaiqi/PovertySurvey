@@ -304,6 +304,9 @@ export default {
 				} else if (item.col_type === "Enum" || item.col_type === "Dict") {
 					fieldInfo.type = "radioFk"
 					fieldInfo.options = item.option_list_v2
+				} else if (item.col_type === "Set") {
+					fieldInfo.type = "checkboxFk"
+					fieldInfo.options = item.option_list_v2
 				} else if (item.col_type === "MultilineText") {
 					// fieldInfo.type = "textarea"
 					fieldInfo.type = "input"
@@ -386,6 +389,7 @@ export default {
 				if (item.more_config && typeof item.more_config == "string") {
 					try {
 						let moreConfig = JSON.parse(item.more_config)
+						fieldInfo.moreConfig = moreConfig
 						if (moreConfig.formulaShow) {
 							fieldInfo.formulaShow = moreConfig.formulaShow
 						}

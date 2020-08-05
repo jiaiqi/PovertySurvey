@@ -564,7 +564,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	.current-tab {
-		color: #0bc99d;
+		color: #0081ff;
 	}
 	.list-box {
 		background-color: #efefef;

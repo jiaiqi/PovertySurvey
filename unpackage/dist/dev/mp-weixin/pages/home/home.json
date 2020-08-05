@@ -1,7 +1,0 @@
-{
-  "usingComponents": {
-    "tab-list": "/components/bx-tablist/bx-tablist",
-    "swiper-carousel": "/components/bx-swiper/bx-swiper",
-    "swiper-menu": "/components/bx-swiper-menu/bx-swiper-menu"
-  }
-}

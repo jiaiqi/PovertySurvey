@@ -1,41 +1,50 @@
 <template>
-	<view>
-		<bxform
-			:service="serviceName"
-			ref="bxForm"
-			:pageType="type"
-			:defaultCondition="defaultCondition"
-			:BxformType="type"
-			:fields="fields"
-			v-if="fields.length>0"
-			@changeFieldModel="changeFieldModel"
-			:moreConfig="colsV2Data && colsV2Data.more_config ? colsV2Data.more_config : null"
-		></bxform>
-		<bxButtons :buttons="buttons" @on-button-change="onButton($event)" v-if="buttons && buttons.length > 0"></bxButtons>
-		<!-- <button class="bg-green cu-btn lg">查看列表</button> -->
-		<view class="sublist-content" v-if="type === 'detail' && childService && childService.length > 0">
-			<!-- <view class="sublist-content" v-if="type === 'detail'&&hasChildService"> -->
-			<view class="sublist-box" v-if="showSublist">
-				<view class="child-service" v-for="item in childService" :key="item.service_name">
-					<button
-						class="cu-btn bg-blue"
-						:class="{
-							'bg-grey':
-								item.foreign_key &&
-								item.foreign_key.more_config &&
-								item.foreign_key.more_config.statusColor &&
-								item.foreign_key.more_config.statusColor.noStart &&
-								item.childData.data &&
-								item.childData.data.length === 0
-						}"
-						v-if="item.foreign_key.section_name && item.childData && item.childData.data && Array.isArray(item.childData.data)"
-						@click="toChildList(item)"
-					>
-						<text class="section_name">{{ item.foreign_key.section_name }}({{ item.childData.data.length }})</text>
-					</button>
-				</view>
-			</view>
-			<!-- 	<button class="cu-btn  bg-blue margin-tb-sm" v-if="!showSublist&&hasChildService" @click="showSublist = !showSublist">
+	<view class="cu-card article " style="min-height: 100vh;height: auto;">
+		<view class="cu-item" :class="{show:fields&&fields.length>0}">
+			<view>
+				<bxform
+					:service="serviceName"
+					ref="bxForm"
+					:pageType="type"
+					:defaultCondition="defaultCondition"
+					:BxformType="type"
+					:fields="fields"
+					v-if="fields.length > 0"
+					@changeFieldModel="changeFieldModel"
+					:moreConfig="colsV2Data && colsV2Data.more_config ? colsV2Data.more_config : null"
+				></bxform>
+				<bxButtons :buttons="buttons" @on-button-change="onButton($event)" v-if="buttons && buttons.length > 0 && formDisabled != true"></bxButtons>
+				<!-- <button class="bg-green cu-btn lg">查看列表</button> -->
+				<view class="sublist-content" v-if="type === 'detail' && childService && childService.length > 0">
+					<!-- <view class="sublist-content" v-if="type === 'detail'&&hasChildService"> -->
+					<view class="sublist-box" v-if="showSublist">
+						<view class="child-service" v-for="item in childService" :key="item.service_name">
+							<view
+								class="bg-blue service"
+								:class="{
+									'bg-gray':
+										item.foreign_key &&
+										item.foreign_key.more_config &&
+										item.foreign_key.more_config.statusColor &&
+										item.foreign_key.more_config.statusColor.noStart &&
+										item.childData.data &&
+										item.childData.data.length === 0
+								}"
+								v-if="item.foreign_key.section_name && item.childData && item.childData.data && Array.isArray(item.childData.data)"
+								@click="toChildList(item)"
+							>
+								<!-- 标题 -->
+								<text class="section_name">{{ item.foreign_key.section_name }}</text>
+								<!-- 内容 -->
+								<text class="section_content" v-if="item.data && item.foreign_key.more_config && item.foreign_key.more_config.resultCol">
+									{{ item.data[item.foreign_key.more_config.resultCol] }}
+								</text>
+								<!-- 结论 -->
+								<text class="section_verdict"></text>
+							</view>
+						</view>
+					</view>
+					<!-- 	<button class="cu-btn  bg-blue margin-tb-sm" v-if="!showSublist&&hasChildService" @click="showSublist = !showSublist">
 				展开子表
 				<text class="lg text-white cuIcon-down margin-left-xs"></text>
 			</button>
@@ -43,6 +52,8 @@
 				收起子表
 				<text class="lg text-white cuIcon-top margin-left-xs"></text>
 			</button> -->
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -63,9 +74,11 @@ export default {
 			defaultCondition: [],
 			params: {},
 			formData: {},
+			defaultVal: {},
 			childService: [], // 子表
 			hasChildService: false, //是否拥有子表
-			showSublist: true //显示子表
+			showSublist: true, //显示子表
+			formDisabled: false
 		};
 	},
 	computed: {
@@ -156,7 +169,12 @@ export default {
 		} else if (option.hasOwnProperty('params')) {
 			this.serviceName = this.params.serviceName;
 			this.type = this.params.type;
-			this.getDetailfieldModel();
+			if (this.type === 'detail' || this.type === 'update') {
+				this.getDetailfieldModel();
+			}
+			if (this.params.formDisabled == true) {
+				this.formDisabled = true;
+			}
 			this.condition = this.params.condition;
 			// this.defaultVal = this.params.defaultVal;
 			let cond = [];
@@ -187,8 +205,9 @@ export default {
 	methods: {
 		toChildList(e) {
 			let data = this.deepClone(e);
-			let condition = [{ colName: e.foreign_key.column_name, ruleType: 'eq', value: this.formData[e.foreign_key.referenced_column_name] }];
-			if (e.foreign_key && e.foreign_key.more_config && e.foreign_key.more_config.targetType) {
+			let formData = this.defaultVal;
+			let condition = [{ colName: e.foreign_key.column_name, ruleType: 'eq', value: formData[e.foreign_key.referenced_column_name] }];
+			if (e.foreign_key && e.foreign_key.more_config && e.foreign_key.more_config.targetType && formData[e.foreign_key.referenced_column_name]) {
 				let targetType = e.foreign_key.more_config.targetType;
 				if (targetType === 'list') {
 					uni.navigateTo({
@@ -197,7 +216,8 @@ export default {
 				} else if (targetType === 'detail') {
 					if (e.childData && e.childData.data && e.childData.data.length > 0) {
 						let params = {
-							type: 'detail',
+							type: 'update',
+							formDisabled: true,
 							condition: [
 								{
 									colName: 'id',
@@ -205,7 +225,7 @@ export default {
 									value: e.childData.data[0].id
 								}
 							],
-							serviceName: e.service_name.replace('_select', '_add')
+							serviceName: e.service_name
 							// "defaultVal": row
 						};
 						uni.navigateTo({
@@ -213,10 +233,10 @@ export default {
 						});
 					} else {
 						uni.showModal({
-							title:"提示",
-							content:"暂无数据，是否跳转到数据添加页面",
+							title: '提示',
+							content: '暂无数据，是否跳转到数据添加页面',
 							success(res) {
-								if(res.confirm){
+								if (res.confirm) {
 									let params = {
 										type: 'add',
 										serviceName: e.service_name.replace('_select', '_add')
@@ -227,8 +247,7 @@ export default {
 									});
 								}
 							}
-						})
-					
+						});
 					}
 				}
 			} else {
@@ -266,7 +285,14 @@ export default {
 		},
 		getFieldsV2: async function(condition) {
 			let app = uni.getStorageSync('activeApp');
-			let colVs = await this.getServiceV2(this.serviceName, this.type, this.type, app);
+			let type = '';
+			if (this.formDisabled) {
+				type = 'detail';
+			}
+			let colVs = await this.getServiceV2(this.serviceName, type?type:this.type, type?type:this.type, app);
+			if (this.formDisabled) {
+				colVs._fieldInfo.forEach(item => (item.disabled = true));
+			}
 			if (colVs.child_service && Array.isArray(colVs.child_service) && colVs.child_service.length > 0) {
 				// 有子表
 				this.hasChildService = true;
@@ -274,6 +300,9 @@ export default {
 				this.childService.forEach((item, index) => {
 					this.selectList(item).then(res => {
 						item.childData = res;
+						if (res.data && res.data.length > 0) {
+							item.data = res.data[0];
+						}
 						if (item.foreign_key && item.foreign_key.more_config && typeof item.foreign_key.more_config === 'string') {
 							try {
 								item.foreign_key.more_config = JSON.parse(item.foreign_key.more_config);
@@ -306,8 +335,8 @@ export default {
 			let self = this;
 			switch (this.type) {
 				case 'update':
-				//       this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.params.defaultVal);
-				//       break;
+					this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.defaultVal);
+					break;
 				case 'add':
 					console.log(this.formData, 'this.formData');
 					if (Object.values(this.formData).length > 0) {
@@ -512,12 +541,12 @@ export default {
 		display: flex;
 		border: 1px dashed #efefef;
 		justify-content: space-between;
-		padding: 30rpx 20rpx;
+		padding: 10rpx;
 		flex-wrap: wrap;
 		.child-service {
 			// width: 50%;
 			width: calc(50% - 20rpx);
-			height: 80rpx;
+			height: 150rpx;
 			display: flex;
 			justify-content: center;
 			align-items: center;
@@ -528,13 +557,40 @@ export default {
 			button {
 				flex: 1;
 			}
+			.service {
+				height: 100%;
+				width: 100%;
+				border-radius: 10rpx;
+				display: flex;
+				flex-direction: column;
+				justify-content: flex-start;
+			}
 			.section_name {
 				font-size: 12px;
 				padding: 10rpx;
 				overflow: hidden;
 				white-space: nowrap;
 				text-overflow: ellipsis;
+				font-size: 12px;
+				display: flex;
 			}
+			.section_content {
+				font-weight: 700;
+				padding-top: 10px;
+				display: flex;
+				flex: 1;
+				justify-content: center;
+			}
+		}
+	}
+}
+.article {
+	background-color: #c4e5ff !important;
+	.cu-item{
+		opacity: 0;
+		&.show{
+			opacity: 1;
+			transition:all 2s;
 		}
 	}
 }

@@ -1,6 +1,17 @@
 <template>
-	<view class="bg-white form-box" style="width:100%;" v-if="allField.length > 0">
-		<view v-for="(item, index) in allField" :key="index" class="form-box-item">
+	<view class="bg-white form-box" v-if="allField.length > 0">
+		<view
+			v-for="(item, index) in allField"
+			:key="index"
+			class="form-box-item"
+			:class="{
+				image: item.col_type === 'Image',
+				col2: item.moreConfig&&item.moreConfig.colSpan == 2,
+				col3: item.moreConfig&&item.moreConfig.colSpan == 3,
+				row2: item.moreConfig&&item.moreConfig.rowSpan == 2,
+				row3: item.moreConfig&&item.moreConfig.rowSpan == 3
+			}"
+		>
 			<formItem
 				:procData="procData"
 				:field="item"
@@ -94,8 +105,7 @@ export default {
 			oldFieldModel: {},
 			specialCol: [],
 			more_config: {
-				service_call_cfg: [
-				]
+				service_call_cfg: []
 			}
 		};
 	},
@@ -147,7 +157,7 @@ export default {
 				});
 				this.allField = fields.map((itemData, index) => {
 					this.fieldModel[itemData.column] = itemData.value;
-					this.$emit('changeFieldModel',this.fieldModel)
+					this.$emit('changeFieldModel', this.fieldModel);
 					let item = this.fieldModel;
 					if (itemData.hasOwnProperty('isShowExp') && item.hasOwnProperty(itemData.column)) {
 						itemData['showExp'] = this.evalInTo(itemData, item);
@@ -158,7 +168,7 @@ export default {
 					}
 					if (itemData.formulaShow) {
 						itemData['showExp'] = evaluatorTo(item, itemData.formulaShow);
-						itemData['display'] = itemData['showExp']
+						itemData['display'] = itemData['showExp'];
 					}
 					itemData.valid = {
 						column: itemData.column,
@@ -190,13 +200,13 @@ export default {
 				if (e.condition && Array.isArray(e.condition) && e.condition.length > 0 && e.condition[0].colName === e.condition[0].value) {
 					e.condition.forEach(col => {
 						this.fieldModel[col.value] = e.colData[col.value];
-						this.$emit('changeFieldModel',this.fieldModel)
-						self.allField.forEach((field,index)=>{
-							if(field.column===col.value){
-								field.value = e.colData[col.value]
+						this.$emit('changeFieldModel', this.fieldModel);
+						self.allField.forEach((field, index) => {
+							if (field.column === col.value) {
+								field.value = e.colData[col.value];
 								// self.$set(self.allField,index,field)
 							}
-						})
+						});
 					});
 				}
 			}
@@ -232,26 +242,26 @@ export default {
 					}
 				});
 			}
-			this.$emit('changeFieldModel',this.fieldModel)
+			this.$emit('changeFieldModel', this.fieldModel);
 			console.log('valueChange', e, this.fieldModel[e.column], this.fieldModel);
 		},
 		onValBlur(e) {
 			console.log('e', e, this.fieldModel, this.fieldModel[e.column]);
 			this.fieldModel[e.column] = e.value;
 			const self = this;
-			this.$emit('changeFieldModel',this.fieldModel)
+			this.$emit('changeFieldModel', this.fieldModel);
 			this.$emit('value-blur', e);
 		},
 		getDetailfieldModel() {
 			return this.fieldModel;
 		},
 		getFieldModel() {
-			console.log(this.fieldModel,'getFieldModel');
+			console.log(this.fieldModel, 'getFieldModel');
 			let valid = 0;
 			let showsNum = 0;
 			this.allField.map((item, index) => {
 				let valids = this.$refs.fitem[index].getValid();
-				console.log('字段校验', valids,item);
+				console.log('字段校验', valids, item);
 				if (item.display) {
 					showsNum++;
 					if (valids.valid) {
@@ -344,11 +354,35 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-	.form-box{
-		display: flex;
-		flex-wrap: wrap;
-		.form-box-item{
-			min-width: 50%;
+.form-box {
+	display: flex;
+	flex-wrap: wrap;
+	width: 95%;
+	margin: 0 auto;
+	border-radius: 10rpx;
+	// display: grid;
+	// grid-template-columns: repeat(auto-fill, 375rpx);
+	// grid-auto-flow: row;
+	.form-box-item {
+		min-width: 50%;
+		padding: 5rpx 0;
+		&.image {
+			grid-row-end: span 3;
+			width: 100%;
+		
+		}
+		&.row2 {
+			grid-row-end: span 2;
+		}
+		&.row3 {
+			grid-row-end: span 3;
+		}
+		&.col3 {
+			grid-column-end: span 3;
+		}
+		&.col2 {
+			grid-column-end: span 2;
 		}
 	}
+}
 </style>

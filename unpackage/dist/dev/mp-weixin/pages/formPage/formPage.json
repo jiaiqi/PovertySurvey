@@ -1,6 +1,0 @@
-{
-  "usingComponents": {
-    "bxform": "/components/bx-form/bx-form",
-    "bx-buttons": "/components/bx-buttons/bx-buttons"
-  }
-}

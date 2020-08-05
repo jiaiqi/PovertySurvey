@@ -5,7 +5,7 @@
 				<image :src="path" :class="{'dragging':isDragging(index)}" draggable="true" @tap="previewImage" :data-index="index" @touchstart="start" @touchmove.stop.prevent="move" @touchend="stop"></image>
 				<view v-if="isShowDel" class="imageDel" @tap="deleteImage" :data-index="index">x</view>
 			</view>
-			<view v-if="isShowAdd&&settings&&settings.eventType!=='navTo'" class="imageUpload" @tap="selectImage">+</view>
+			<view v-if="isShowAdd&&!settings||(settings&&settings.eventType!=='navTo')" class="imageUpload" @tap="selectImage">+</view>
 			<view v-if="isShowAdd&&settings&&settings.eventType==='navTo'" class="imageUpload" @tap="toPage">+</view>
 		</view>
 		<image v-if="showMoveImage" class="moveImage" :style="{left:posMoveImageLeft, top:posMoveImageTop}" :src="moveImagePath"></image>
@@ -71,11 +71,9 @@
 				if(this.enableAdd === false){
 					return false
 				}
-				
 				if(this.limit && this.imageList.length >= this.limit){
 					return false
 				}
-				
 				return true
 			},
 			isDragable: function(){
@@ -382,7 +380,7 @@
 	}
 	
 	.imageUpload{
-		line-height: 130upx;
+		line-height: 158upx;
 		text-align: center;
 		font-size: 150upx;
 		color: #D9D9D9;

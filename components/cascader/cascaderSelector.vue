@@ -291,6 +291,10 @@ export default {
       type: String,
       default: ''
     },
+		defaultCondition:{
+			type: Array,
+			default: ()=>[]
+		},
     srvInfo: {
       type: Object,
       default: () => {

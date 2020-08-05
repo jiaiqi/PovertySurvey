@@ -1,7 +1,0 @@
-{
-  "component": true,
-  "usingComponents": {
-    "list-item": "/components/bx-list/bx-list-item",
-    "s-pull-scroll": "/components/s-pull-scroll/index"
-  }
-}

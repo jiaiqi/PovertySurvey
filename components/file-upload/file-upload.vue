@@ -1,7 +1,7 @@
 <template>
   <view class="file-upload">
     <view ref="input" class="input"></view>
-    <view class="addNew" @click="chooseFile" v-if="fileResList.length<1"><text class="cuIcon-add"></text></view>
+    <view class="addNew" @click="chooseFile" v-if="fileResList.length<1">+</view>
     <view class=""><text ref="fileTip" id="fileTip"></text></view>
     <view class="file-list">
       <view class="file-list-item" v-for="(item,index) in fileResList" :key="index">
@@ -172,14 +172,22 @@ export default {
 <style scoped lang="scss">
 .file-upload {
   .addNew {
-    width: 125upx;
-    height: 150upx;
-    border: 1px solid #ccc;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    margin-top: 20upx;
-    margin-right: 12rpx;
+    // width: 125upx;
+    // height: 150upx;
+    // border: 1px solid #ccc;
+    // display: flex;
+    // justify-content: center;
+    // align-items: center;
+    // margin-top: 20upx;
+    // margin-right: 12rpx;
+		line-height: 150upx;
+		height: 150upx;
+		width: 150upx;
+	    text-align: center;
+	    font-size: 64px;
+	    color: #D9D9D9;
+	    border: 1px solid #D9D9D9;
+	    border-radius: 3px;
   }
 }
 </style>

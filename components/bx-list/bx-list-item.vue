@@ -3,6 +3,12 @@
 		<view class="list-item flex" v-if="viewType === 'normal'">
 			<image
 				class="main-image"
+				v-if="listData.img&&listData.img.value"
+				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' +listData.img.value"
+				:imgColName="'img'"
+			></image>
+			<image
+				class="main-image"
 				v-if="viewTemp['img']"
 				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + itemData[viewTemp['img']]"
 				:imgColName="'img'"
@@ -607,6 +613,7 @@ export default {
 				white-space: nowrap;
 				display: flex;
 				justify-content: space-between;
+				flex-wrap: wrap;
 				.content {
 					flex: 1;
 				}

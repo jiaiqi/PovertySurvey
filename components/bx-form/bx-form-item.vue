@@ -1,15 +1,19 @@
 <template>
 	<view class="bx-form-item">
-		<view class="cu-form-group itemwrap" v-if="fieldData.display" :class="{ 'form-detail': pageFormType === 'detail' }">
-			<view class="title" :class="!valid.valid ? 'valid_error' : ''">
+		<view
+			class="cu-form-group itemwrap" 
+			v-if="fieldData.display"
+			:class="{ 'form-detail': pageFormType === 'detail', flexColumn: fieldData.moreConfig && fieldData.moreConfig.labelPosition === 'top' }"
+		>
+			<view class="title" :class="!valid.valid ? 'valid_error' : ''" v-if="fieldData.col_type !== 'Image' || (fieldData.col_type === 'Image' && !fieldData.value)">
 				<text class="text-red text-shadow" v-show="fieldData.isRequire">*</text>
 				{{ fieldData.label }}:
 				<text v-show="!valid.valid">({{ valid.msg }})</text>
 			</view>
 			<view v-if="pageFormType === 'detail'" class="detail-text">
-				<text class=" text-xl" v-if="pageFormType === 'detail' && fieldData.type !== 'images' && fieldData.type !== 'snote' && fieldData.type !== 'Note'">
+				<view v-if="pageFormType === 'detail' && fieldData.type !== 'images' && fieldData.type !== 'snote' && fieldData.type !== 'Note'">
 					{{ dictShowValue ? dictShowValue : treeSelectorShowValue ? treeSelectorShowValue : fieldData.value }}
-				</text>
+				</view>
 				<view class="" v-html="fieldData.value" v-if="pageFormType === 'detail' && (fieldData.type === 'snote' || fieldData.type === 'Note')"></view>
 				<!-- <view
           v-html="JSON.parse(JSON.stringify(fieldData.value).replace(/\<img/gi, '<img width=100% height=auto '))"
@@ -21,7 +25,7 @@
 						v-for="(item, index) in imagesUrl"
 						:key="index"
 						style="padding: 5upx;"
-						class="cu-avatar radius lg"
+						class="headimg radius lg"
 						@tap="showModal(index, 'Image')"
 						data-target="Image"
 						:src="item"
@@ -39,7 +43,7 @@
 			>
 				<radio-group @change="radioChange" v-if="fieldData.type === 'radio'" :class="!valid.valid ? 'valid_error' : ''">
 					<radio
-						color="#0bc99d"
+						color="#0081ff"
 						:key="index"
 						:disabled="fieldData.disabled ? fieldData.disabled : false"
 						v-for="(itema, index) in fieldData.options"
@@ -52,7 +56,7 @@
 				</radio-group>
 				<radio-group @change="radioChange" v-else-if="fieldData.type === 'radioFk'" :class="!valid.valid ? 'valid_error' : ''">
 					<radio
-						color="#0bc99d"
+						color="#0081ff"
 						:key="index"
 						v-for="(itema, index) in fieldData.options"
 						class="blue radio"
@@ -65,9 +69,10 @@
 					</radio>
 				</radio-group>
 				<checkbox-group name="checkbox-group" class="checkbox-group" @change="radioChange" v-else-if="fieldData.type === 'checkbox'" :class="!valid.valid ? 'valid_error' : ''">
-					<label v-for="(item, index) in fieldData.options" :key="index" class="checkbox">
+					<label v-for="(item, index) in fieldData.options" :key="index">
 						<checkbox
-							color="#0bc99d"
+						 class="checkbox"
+							color="#0081ff"
 							:value="item"
 							:disabled="fieldData.disabled ? fieldData.disabled : false"
 							:checked="fieldData && fieldData.value && isArray(fieldData.value) ? fieldData.value.indexOf(item) !== -1 : false"
@@ -78,7 +83,7 @@
 				<checkbox-group name="checkbox-group" class="checkbox-group" @change="radioChange" v-else-if="fieldData.type === 'checkboxFk'" :class="!valid.valid ? 'valid_error' : ''">
 					<label v-for="(item, index) in fieldData.options" :key="index" class="checkbox">
 						<checkbox
-							color="#0bc99d"
+							color="#0081ff"
 							:value="item.key"
 							:disabled="fieldData.disabled ? fieldData.disabled : false"
 							:checked="fieldData && fieldData.value && isArray(fieldData.value) ? fieldData.value.indexOf(item.key) !== -1 : false"
@@ -169,7 +174,7 @@
 					/>
 					<text
 						class="input-icon cuIcon-calendar"
-						style="position: absolute;top:10upx;right: 20upx;color: #0bc99d;"
+						style="position: absolute;top:10upx;right: 20upx;color: #0081ff;"
 						@click.stop="fieldData.disabled ? false : toggleTab(fieldData.type)"
 					></text>
 
@@ -238,43 +243,7 @@
 					name="input"
 					v-else-if="fieldData.type === 'digit' || fieldData.type === 'Float'"
 				/>
-				<!-- <view v-else-if="fieldData.type === 'treeSelector'"> -->
-				<!-- <bxTreeSelector
-            ref="bxTreeSelector"
-            :isMultiple="false"
-            :defaultValue="fieldData.value"
-            :options="fieldData.option_list_v2"
-            :fieldsModel="fieldsModel"
-            @on-tree-change="onTreeSelector"
-          ></bxTreeSelector> -->
-				<!-- <bxTreeSelector
-            :srvInfo="fieldData.option_list_v2"
-            :treeData="treeSelectorData"
-            :childNodeCol="'_childNode'"
-            :disColName="fieldData.option_list_v2['key_disp_col']"
-            :nodeKey="'no'"
-            @clickParentNode="onTreeGridChange"
-            @clickLastNode="onMenu"
-          ></bxTreeSelector> -->
-				<!-- </view> -->
 				<view v-else-if="fieldData.type === 'treeSelector'" @click="openTreeSelector">
-					<!-- <input :placeholder="'点击选择' + fieldData.label" v-model="fieldData.value" disabled :class="!valid.valid ? 'valid_error' : ''" name="input"  /> -->
-					<!--      <input
-            :placeholder="'点击选择' + fieldData.label"
-            :value="fieldData.colData[fieldData.option_list_v2.key_disp_col]"
-            disabled
-            :class="!valid.valid ? 'valid_error' : ''"
-            v-if="fieldData.colData && fieldData.value"
-            name="input"
-          /> -->
-					<!--    <input
-            :placeholder="'点击选择' + fieldData.label"
-            v-if="!fieldData.colData && fieldData.value"
-            :value="fieldData.value"
-            disabled
-            :class="!valid.valid ? 'valid_error' : ''"
-            name="input"
-          /> -->
 					<input :placeholder="'点击选择' + fieldData.label" :value="treeSelectorShowValue" disabled :class="!valid.valid ? 'valid_error' : ''" name="input" />
 				</view>
 				<view v-else-if="fieldData.type === 'cascader'" @click="openCascader">
@@ -326,17 +295,6 @@
 				</view> -->
 			</view>
 		</view>
-		<!--    <uni-popup ref="treePopup" type="bottom" @change="changePopup">
-      <bxTreeSelector
-        :srvInfo="fieldData.option_list_v2"
-        :treeData="treeSelectorData"
-        :childNodeCol="'_childNode'"
-        :disColName="fieldData.option_list_v2 ? fieldData.option_list_v2['key_disp_col'] : {}"
-        :nodeKey="fieldData.option_list_v2 && fieldData.option_list_v2['refed_col'] ? fieldData.option_list_v2['refed_col'] : 'no'"
-        @clickParentNode="onTreeGridChange"
-        @clickLastNode="onMenu"
-      ></bxTreeSelector>
-    </uni-popup> -->
 		<view class="cu-modal bottom-modal" :class="{ show: showTreeSelector }">
 			<view class="cu-dialog tree-selector">
 				<bxTreeSelector
@@ -838,7 +796,7 @@ export default {
 		},
 		toPage(e) {
 			uni.redirectTo({
-				url: this.fieldData.settings.eventTarget + '&fromService=' + this.service +"&fieldMapping="+JSON.stringify(this.fieldData.settings.columnTemp)
+				url: this.fieldData.settings.eventTarget + '&fromService=' + this.service + '&fieldMapping=' + JSON.stringify(this.fieldData.settings.columnTemp)
 			});
 		},
 		getImageInfo(e) {
@@ -999,56 +957,18 @@ export default {
 			if (this.field.disabled === true) {
 				return;
 			}
-
-			if (
-				this.service &&
-				(this.service == 'srvzhxq_guest_mgmt_yezhu_add' ||
-					this.service == 'srvzhxq_guest_mgmt_yezhu_update' ||
-					this.service == 'srvzhxq_repairs_add' ||
-					this.service == 'srvzhxq_clgl_add' ||
-					((this.service === 'srvzhxq_syrk_add' || this.service === 'srvzhxq_syrk_wuye_add') &&
-						this.field.condition &&
-						Array.isArray(this.field.condition) &&
-						this.field.condition.length > 0 &&
-						this.field.condition[0].colName === this.field.condition[0].value))
-			) {
-				if ((this.service === 'srvzhxq_repairs_add' || this.service === 'srvzhxq_clgl_add') && (this.field.column === 'xm' || this.field.column === 'glry')) {
-					// let userData = uni.getStorageSync('infoObjArr')
-					this.showTreeSelector = true;
-					self.getUserRoomPerson(self.fieldsModel.fwbm).then(per => {
-						console.log('this.procData.fwbm', per);
-						self.treeSelectorData = per;
-					});
-				} else {
-					this.getShareRoomNum(this.service).then(a => {
-						this.showTreeSelector = true;
-					});
-				}
-			}
-			// else if (this.fieldData.col_type == 'bxzhxq_syrk') {
-			//
-			// 	this.getUserRoomPerson(this.fieldData.option_list_v2).then(person => {
-			// 		this.showTreeSelector = true;
-			// 		this.treeSelectorData = [];
-			// 		person.forEach(per => {
-			// 			this.treeSelectorData.push(per);
-			// 		});
-			// 	});
-			// }
-			else {
-				self.getTreeSelectorData().then(_ => {
-					if (self.fieldData.disabled === false) {
-						if (self.treeSelectorData.length > 0) {
-							self.showTreeSelector = true;
-						} else {
-							uni.showToast({
-								title: '暂无数据',
-								icon: 'none'
-							});
-						}
+			self.getTreeSelectorData().then(_ => {
+				if (self.fieldData.disabled === false) {
+					if (self.treeSelectorData.length > 0) {
+						self.showTreeSelector = true;
+					} else {
+						uni.showToast({
+							title: '暂无数据',
+							icon: 'none'
+						});
 					}
-				});
-			}
+				}
+			});
 		},
 		getCascaderValue(val, btnType) {
 			console.log(val);
@@ -1327,16 +1247,6 @@ export default {
 		fieldsModel: {
 			handler: function(newValue, oldValue) {
 				console.log('fieldsModel--------', newValue);
-				// this.modelData = JSON.parse(JSON.stringify(newValue))
-				// console.log('this.modelData........', this.modelData);
-				//    if(self.fieldData.type === "list"){
-				//  let listItemModel =  self.fieldData.optionsConfig.model
-				//  let colKey = self.fieldData.optionsConfig.conditions
-				//  for(let i = 0;i<colKey.length;i++){
-				// 	 listItemModel[colKey[i].colName] = newValue[colKey[i].value]
-				//  }
-				//  self.listChildModel = listItemModel
-				// }
 			},
 			deep: true
 		}
@@ -1352,7 +1262,6 @@ export default {
 }
 .content {
 	text-align: left;
-	// height: 400upx;
 	display: flex;
 	flex-direction: row;
 	align-items: center;
@@ -1364,24 +1273,23 @@ export default {
 		width: 100%;
 	}
 	.radio {
-		// display: flex;
-		// width: 100%;
-		// max-width: 298px;
-		// padding: 20rpx 0;
-		min-width: 22%;
+
+		min-width: 21%;
 		// margin-bottom: 10rpx;
-		margin-right: 20rpx;
+		margin: 10rpx;
 		label {
 			line-height: 70rpx;
 		}
 	}
-	// & /deep/ .uni-radio-input-checked {
-	// 	background-color: red;
-	// }
-
-	.checkbox {
-		width: 100%;
+	.checkbox-group{
+		display: flex;
+		flex-wrap: wrap;
+		.checkbox {
+			min-width: 25%;
+			margin: 10px 5px 10px 10px;
+		}
 	}
+	
 }
 
 /* #ifdef MP-WEIXIN */
@@ -1390,7 +1298,6 @@ export default {
 	font-size: 16px;
 	color: #555;
 	box-sizing: border-box;
-	padding: 5px;
 	text-indent: 0;
 	background: transparent;
 	border: 1rpx solid #e6ebe9;
@@ -1398,7 +1305,6 @@ export default {
 	border-radius: 2px;
 	outline: none;
 	line-height: normal;
-	padding: 10rpx;
 	&.alo_radio {
 		border: none;
 	}
@@ -1465,10 +1371,12 @@ uni-text.input-icon {
 }
 .cu-form-group .title {
 	display: flex;
-	align-items: flex-end;
-	height: auto;
-	margin: 20rpx 0 0upx;
+	align-items: center;
+	// height: auto;
+	margin: 10upx 0;
 	color: #333;
+	font-size: 14px;
+	font-weight: 700;
 	&.valid_error {
 		color: #ff0000;
 	}
@@ -1479,92 +1387,46 @@ uni-text.input-icon {
 	flex-direction: row;
 	// border-bottom: 1px dashed #efefef;
 	min-height: 30px;
-	padding:0rpx 20rpx;
+	padding: 0rpx 20rpx;
 	align-items: center;
-	.title{
+	&.flexColumn {
+		flex-direction: column;
+		align-items: flex-start;
+		.detail-text {
+			// padding:0 20rpx;
+		}
+	}
+	.title {
 		width: auto;
 		padding: 0 10rpx;
 		margin: 0;
+		font-size: 14px;
+		font-weight: 700;
 	}
-	.detail-text{
-		width: auto;
-		.detail-image{
-			// min-width: 50vw;
-			.cu-avatar{
-				width: 80px;
+	.detail-text {
+		flex: 1;
+		color: #333;
+		line-height: 30px;
+		text-indent: 20rpx;
+		.detail-image {
+			width: 100%;
+			display: flex;
+			justify-content: center;
+			.headimg{
+				width: auto;
+				height: auto;
+				width: 100px;
 				height: 100px;
+				overflow: hidden;
+				border-radius: 20rpx;
+				background-size: cover;
 			}
 		}
-			
 	}
-	// .title {
-	// 	flex: 1;
-	// 	opacity: 0.5;
-	// }
-	// .detail-text {
-	// 	flex: 2;
-	// 	height: auto;
-	// 	margin: 10px 0 0px;
-	// 	line-height: 60rpx;
-	// 	overflow: scroll;
-	// }
 }
 .cu-card.article > .cu-item .title {
 	line-height: normal;
 }
-// uni-checkbox /deep/ .uni-checkbox-input {
-//   width: 16px !important;
-//   height: 16px !important;
-// }
-// uni-checkbox-group .checkbox {
-//   display: flex;
-//   align-items: center;
-// }
-// uni-radio::before,
-// uni-checkbox::before {
-//   font-family: 'cuIcon';
-//   content: '\E645';
-//   position: absolute;
-//   color: #ffffff !important;
-//   top: 50%;
-//   margin-top: -8px;
-//   right: 2px;
-//   font-size: 14px;
-//   line-height: 14px;
-//   pointer-events: none;
-//   -webkit-transform: scale(1, 1);
-//   transform: scale(1, 1);
-//   -webkit-transition: all 0.3s ease-in-out 0s;
-//   transition: all 0.3s ease-in-out 0s;
-//   z-index: 9;
-// }
-// uni-radio /deep/ .uni-radio-input {
-//   margin: 0;
-//   width: 16px !important;
-//   height: 16px !important;
-// }
-// .radio /deep/ uni-radio-input-checked {
-//   width: 16px !important;
-//   height: 16px !important;
-//   background-color: white !important;
-// }
-// .alo_radio /deep/ radio.radio[checked]::after,
-// radio.radio .uni-radio-input-checked::after {
-//   content: '';
-//   background-color: transparent;
-//   display: block;
-//   position: absolute;
-//   width: 8px;
-//   height: 8px;
-//   z-index: 999;
-//   top: 0px;
-//   // left: -272px !important;
-//   right: 0;
-//   bottom: 0;
-//   margin: auto;
-//   border-radius: 100px;
-//   border: 4px solid #ffffff !important;
-// }
 .cu-dialog.tree-selector,
 .cu-dialog.rich-text {
 	height: auto;
