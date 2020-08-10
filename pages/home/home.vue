@@ -54,21 +54,36 @@ export default {
 					titleCol: 'title',
 					dateCol: 'create_time'
 				}
-			}
+			},
+			collectorInfo: null
 		};
 	},
-	mounted() {
-		this.checkAuthorization();
+	onShow() {
+		this.selectCollectorInfo().then(res => {
+			console.log(res);
+			if (res) {
+				this.collectorInfo = res;
+			} else {
+				// 没有登记采集人员信息
+				// uni.navigateTo({
+				// 	url:'/pages/addInfo/addInfo'
+				// })
+			}
+		});
 	},
 	onLoad(option) {
+		const bxAuthTicket = uni.getStorageSync('bx_auth_ticket');
+		if (!bxAuthTicket) {
+			this.throttle(this.wxLogin(), 3000);
+		}
 		uni.setStorageSync('activeApp', 'daq');
 		if (option.website_no || option.no) {
 			this.webNo = option.website_no ? option.website_no : option.no;
 			if (option.destApp) {
 				uni.setStorageSync('activeApp', option.destApp);
 			}
-		}else {
-			this.webNo = "WS2020080315200011"
+		} else {
+			this.webNo = 'WS2020080315200011';
 		}
 		if (this.webNo) {
 			console.log('-----onLoad-homePage-------', this.webNo);
@@ -96,6 +111,25 @@ export default {
 		}
 	},
 	methods: {
+		async selectCollectorInfo() {
+			let user_no = uni.getStorageSync('login_user_info').user_no;
+			let url = this.getServiceUrl('daq', 'srvdaq_tkry_users_select', 'select');
+			let req = {
+				serviceName: 'srvdaq_tkry_users_select',
+				colNames: ['*'],
+				condition: [{ colName: 'openid', ruleType: 'eq', value: user_no }],
+				page: { pageNo: 1, rownumber: 10 },
+				order: []
+			};
+			if (user_no) {
+				let res = await this.$http.post(url, req);
+				let data = false;
+				if (res.data.state === 'SUCCESS' && res.data.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+					data = res.data.data[0];
+				}
+				return data;
+			}
+		},
 		getPageInfo(website_no, page_no) {
 			if (page_no && website_no) {
 				this.webNo = website_no;
@@ -109,47 +143,64 @@ export default {
 			// 点击了轮播图
 			console.log('点击了轮播图,', e);
 		},
-		clickMenu(e) {
+		async clickMenu(e) {
 			// 菜单按钮点击事件
-			if (uni.getStorageSync('activeApp') === 'zhxq') {
-				this.$emit('clickButton', e);
-			} else {
-				console.log('点击了按钮：', e);
-				if (e.dest_page.indexOf('website_no') > -1) {
-					let startStr = e.dest_page.indexOf('?');
-					let endStr = e.dest_page.indexOf('&');
-					let stri = e.dest_page.slice(startStr, endStr);
-					stri = stri.split('=');
-					this.webNo2 = stri[1];
-					uni.setStorageSync('website_no', stri[1]);
-
-					uni.navigateTo({
-						url: this.$api.homePath + '?website_no=WS2020060611100007&destApp=zhxq'
-					});
-				}
-				if (e.type && e.type === 'more') {
-					// 点击了更多按钮
-					console.log('点击了更多按钮');
-				} else if (e.dest_page) {
-					if (e.dest_app) {
-						uni.setStorageSync('activeApp', e.dest_app);
-						uni.navigateTo({
-							url: e.dest_page,
-							fail(res) {
-								if (res.errMsg) {
-									// #ifdef H5
-									window.location.href = e.dest_page;
-									// #endif
-									// #ifdef MP
-									uni.navigateTo({
-										url: '/pages/public/webContainer/webContainer?webSrc=' + e.dest_page
-									});
-									// #endif
-								}
-							}
-						});
+			console.log('点击了按钮：', e);
+			// let collectorInfo = await this.selectCollectorInfo();
+			// if (!collectorInfo) {
+			// 	uni.showModal({
+			// 		title: '提示',
+			// 		content: '当前登录用户未登记信息，是否跳转到信息登记页面',
+			// 		success(res) {
+			// 			if (res.confirm) {
+			// 				uni.navigateTo({
+			// 					url: '/pages/addInfo/addInfo'
+			// 				});
+			// 			}
+			// 		}
+			// 	});
+			// 	return;
+			// }
+			// if (e.dest_menu_no === '采集统计') {
+			// 	if (collectorInfo.is_admin !== '是') {
+			// 		uni.showToast({
+			// 			title: '没有访问权限',
+			// 			icon: 'none'
+			// 		});
+			// 		return;
+			// 	}
+			// }
+			// if (e.dest_menu_no === '特困人员') {
+			// 	if (collectorInfo.status !== '有效') {
+			// 		uni.showModal({
+			// 			title: '提示',
+			// 			content: '你的信息还未被认证有效,请联系管理人员进行认证',
+			// 			showCancel: false,
+			// 			confirmText: '知道了'
+			// 		});
+			// 		return;
+			// 	}
+			// }
+			if (e.type && e.type === 'more') {
+				// 点击了更多按钮
+				console.log('点击了更多按钮');
+			} else if (e.dest_page) {
+				uni.setStorageSync('activeApp', e.dest_app);
+				uni.navigateTo({
+					url: e.dest_page,
+					fail(res) {
+						if (res.errMsg) {
+							// #ifdef H5
+							window.location.href = e.dest_page;
+							// #endif
+							// #ifdef MP
+							uni.navigateTo({
+								url: '/pages/public/webContainer/webContainer?webSrc=' + e.dest_page
+							});
+							// #endif
+						}
 					}
-				}
+				});
 			}
 		},
 		clickListItem(e) {

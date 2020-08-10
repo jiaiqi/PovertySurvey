@@ -142,7 +142,6 @@ export default {
 				}
 				let cols = []
 				let nCols = cols.filter(item => item.service_name === serviceName && item.use_type === pageType)
-				console.log('=====1', nCols)
 				if (nCols.length === 0) {
 					let req = this.selectRequestObjs()
 					req.serviceName = 'srvsys_service_columnex_v2_select'
@@ -164,20 +163,16 @@ export default {
 					url = url + "?colsel_v2=" + serviceName
 					const response = await this.$http.post(url, req)
 					if (response.data.data) {
-						console.log('=====2', response.data.data)
 						response.data.data.use_type = pageType
 						if ('rowButton' in response.data.data) {
 							// response.data.data._footerBtns = this.getFooterBtns(response.data.data.rowButton)
 						}
-
 						// 第一次拿到，缓存
 						let pageconfig = Vue.prototype.getPageConfig(response.data.data, pageType)
 						// self.$store.commit('setSrvCol', pageconfig)
 						return pageconfig
 					}
 				} else {
-					console.log('=====3', nCols)
-
 					return nCols[0]
 				}
 			} else {
@@ -255,6 +250,7 @@ export default {
 					isRequire: null,
 					type: null,
 				}
+
 				fieldInfo.column = item.columns
 				fieldInfo.label = item.label
 				fieldInfo.seq = item.seq
@@ -264,7 +260,7 @@ export default {
 				fieldInfo.col_type = item.col_type
 				fieldInfo.section = item.section
 				fieldInfo.validators = item.validators
-				
+
 				// col_type 转换 表单组件 type 
 				if (item.col_type === "String" || item.col_type === "TelNo" || item.col_type === 'IdNo') {
 					fieldInfo.type = "input"
@@ -279,12 +275,12 @@ export default {
 				} else if (item.col_type === "Image") {
 					// } else if (item.col_type === "Image" || item.col_type === "FileList") {
 					fieldInfo.type = "images"
-					if (item.columns === "identity_image") {
-						if(item.more_config){
-							try{
+					if (item.columns === "identity_image"||item.columns === "id_card_photo") {
+						if (item.more_config) {
+							try {
 								let settings = JSON.parse(item.more_config)
 								fieldInfo.settings = settings
-							}catch(e){
+							} catch (e) {
 								//TODO handle the exception
 							}
 						}
@@ -316,6 +312,20 @@ export default {
 					fieldInfo.type = "number"
 				} else if (item.bx_col_type === "fk" && item.col_type !== "User") {
 					fieldInfo.type = "treeSelector"
+					if (item.columns === 'area_id') {
+						fieldInfo.type = "cascader"
+						if (fieldInfo.option_list_v2) {
+							fieldInfo.srvInfo = fieldInfo.option_list_v2
+						} else {
+							fieldInfo.srvInfo = {
+								serviceName: 'srvconfig_area_adj_select',
+								appNo: 'config',
+								isTree: true,
+								column: 'path_name',
+								showCol: 'path_name', //要展示的字段
+							}
+						}
+					}
 					// fieldInfo.type = "poupchange"
 				} else if (item.col_type === "User") {
 					fieldInfo.type = "treeSelector"
@@ -335,9 +345,10 @@ export default {
 				} else {
 					fieldInfo.type = item.col_type
 				}
-				if(item.more_config){
+				if (item.more_config) {
 					let config = JSON.parse(item.more_config)
-					if(config.dataType==='area-tree'){
+					if (config.dataType === 'area-tree') {
+
 						fieldInfo.type = "cascader"
 						fieldInfo.srvInfo = {
 							serviceName: 'srvconfig_area_adj_select',
@@ -345,6 +356,12 @@ export default {
 							isTree: true,
 							column: 'path_name',
 							showCol: 'path_name', //要展示的字段
+						}
+						if (config.column) {
+							fieldInfo.srvInfo.column = config.column
+						}
+						if (config.parent_no) {
+							fieldInfo.srvInfo.parent_no = config.parent_no
 						}
 					}
 				}
@@ -392,6 +409,9 @@ export default {
 						fieldInfo.moreConfig = moreConfig
 						if (moreConfig.formulaShow) {
 							fieldInfo.formulaShow = moreConfig.formulaShow
+						}
+						if (moreConfig.calcAttr) {
+							fieldInfo.calcAttr = moreConfig.calcAttr
 						}
 					} catch (e) {
 						console.error(e)
@@ -446,7 +466,7 @@ export default {
 								try {
 									item.operate_params = JSON.parse(item.operate_params)
 								} catch (e) {
-									console.log(e)
+									console.warn(e)
 									//TODO handle the exception
 								}
 								return item
@@ -471,7 +491,6 @@ export default {
 			// 
 			let data = Vue.prototype.deepClone(e)
 			let to1Data = e.filter((item, index) => {
-				// console.log(item.menu_name,item[pidcol])
 				return item[pidcol] === null || item[pidcol] === ""
 			})
 			let to2Data = e.filter((item, index) => {
@@ -484,7 +503,6 @@ export default {
 				for (let i = 0; i < datas.length; i++) {
 					let child = []
 					for (let j = 0; j < aDatas.length; j++) {
-						// console.log("slice==="+j,datas[i][id],aDatas[j][pd])
 						if (datas[i][id] === aDatas[j][pd]) {
 							child.push(aDatas[j])
 							aDatas.slice(j, 1)
@@ -499,7 +517,6 @@ export default {
 				return datas
 			}
 			to1Data = reform(to2Data, pidcol, idcol, to1Data)
-			// console.log("_childNode",e,to1Data)
 			return to1Data
 		}
 		/**
@@ -1019,6 +1036,7 @@ export default {
 					"data": [{
 						"app_no": uni.getStorageSync('_appNo') ? uni.getStorageSync('_appNo') : Vue.prototype.$api.appNo.wxmp,
 						// "app_no": uni.getStorageSync('_appNo'),
+						"user_no": uni.getStorageSync('login_user_info').user_no,
 						"nickname": userInfo.nickName,
 						"sex": userInfo.gender,
 						"country": userInfo.country,
@@ -1031,7 +1049,7 @@ export default {
 					let response = await this.$http.post(url, req);
 					console.log('setWxUserInfo', response);
 					if (response.data.state === 'SUCCESS' && response.data.data && response.data.data.length > 0) {
-						Vue.prototype.wxLogin()
+						Vue.prototype.throttle(Vue.prototype.wxLogin(), 3000)
 						return response.data.data
 					}
 				}
@@ -1286,26 +1304,26 @@ export default {
 							})
 							break;
 						case "detail":
-						
-						if (e.hasOwnProperty("row")) {
-							row = e.row
-							let params = {
-								"type": "detail",
-								"condition": [{
-									"colName": "id",
-									"ruleType": "in",
-									"value": row.id
-								}],
-								"serviceName": btn.service_name,
-								"defaultVal": row
+
+							if (e.hasOwnProperty("row")) {
+								row = e.row
+								let params = {
+									"type": "detail",
+									"condition": [{
+										"colName": "id",
+										"ruleType": "in",
+										"value": row.id
+									}],
+									"serviceName": btn.service_name,
+									"defaultVal": row
+								}
+								console.log("点击了【有效】的公共编辑按钮", row)
+								uni.navigateTo({
+									url: "/pages/formPage/formPage?params=" + JSON.stringify(params)
+								})
+							} else {
+								console.log("点击了【无效】的公共编辑按钮")
 							}
-							console.log("点击了【有效】的公共编辑按钮", row)
-							uni.navigateTo({
-								url: "/pages/formPage/formPage?params=" + JSON.stringify(params)
-							})
-						} else {
-							console.log("点击了【无效】的公共编辑按钮")
-						}
 							return new Promise((resolve, reject) => {
 								resolve(e)
 							})
@@ -1451,6 +1469,8 @@ export default {
 				Vue.prototype.checkAuthorization = function() {
 					// 查看是否授权获取用户信息
 					// #ifdef MP-WEIXIN
+					Vue.prototype.wxLogin()
+					return
 					uni.authorize({
 						scope: 'scope.userInfo',
 						success(res) {
@@ -1466,38 +1486,42 @@ export default {
 								fail: errMsg => {
 									uni.setStorageSync('isAuth', false)
 									console.log('获取用户信息失败失败', errMsg);
-									Vue.prototype.toLoginPage()
+									Vue.prototype.wxLogin()
 								}
 							});
 						},
 						fail(errMsg) {
 							console.log('获取用户信息失败失败', errMsg);
 							uni.setStorageSync('isAuth', false)
-							uni.setStorageSync('isToLogin', false)
+							uni.setStorageSync('hasToAuthPage', false)
 							Vue.prototype.throttle(Vue.prototype.wxLogin(), 3000)
-
 						}
 					});
 					// #endif
 				},
 				Vue.prototype.wxLogin = function(backUrl) {
+					let isLogin = uni.getStorageSync('isLogin')
+					let login_user_info = uni.getStorageSync('login_user_info')
+					if (isLogin && login_user_info) {
+						return
+					}
 					wx.login({
 						success(res) {
 							if (res.code) {
 								//发起网络请求
-								Vue.prototype.verifyLogin(res.code)
+								Vue.prototype.throttle(Vue.prototype.verifyLogin(res.code), 3000)
 								wx.getSetting({
 									success(res) {
-										// checkAuthorization
 										let isAuthUserInfo = res.authSetting['scope.userInfo']
-										let isAuth = uni.getStorageSync('isAuth')
+										// let isAuth = uni.getStorageSync('isAuth')
 										let wxuserinfo = uni.getStorageSync('wxuserinfo')
-										if (!isAuthUserInfo && !isAuth) {
+										let hasToAuthPage = uni.getStorageSync('hasToAuthPage')
+										uni.setStorageSync('hasToAuthPage', true)
+										if (!isAuthUserInfo && !hasToAuthPage) {
 											uni.showModal({
 												title: '提示',
 												content: "您还未授权获取用户信息,点击确定按钮跳转到授权页面",
 												success(res) {
-													uni.setStorageSync('isToLogin', true)
 													if (res.confirm) {
 														Vue.prototype.judgeClientEnviroment()
 														if (backUrl) {
@@ -1511,7 +1535,7 @@ export default {
 														}
 													} else {
 														uni.setStorageSync('isAuth', false)
-														uni.setStorageSync('isToLogin', false)
+														uni.setStorageSync('hasToAuthPage', false)
 													}
 												},
 												complete() {
@@ -1547,7 +1571,7 @@ export default {
 					})
 				},
 				Vue.prototype.toLoginPage = function(backUrl) {
-					// if (!uni.getStorageSync('isToLogin')) {
+					// if (!uni.getStorageSync('hasToAuthPage')) {
 					// #ifdef MP-WEIXIN
 					wx.checkSession({
 						success() {
@@ -1573,7 +1597,7 @@ export default {
 							content: "您还未登录,请先登录在进行相关操作,点击确定按钮跳转到登录页面",
 							success(res) {
 								if (res.confirm) {
-									uni.setStorageSync('isToLogin', true)
+									uni.setStorageSync('hasToAuthPage', true)
 									Vue.prototype.judgeClientEnviroment()
 									if (backUrl) {
 										uni.navigateTo({
@@ -1585,7 +1609,7 @@ export default {
 										})
 									}
 								} else {
-									uni.setStorageSync('isToLogin', false)
+									uni.setStorageSync('hasToAuthPage', false)
 								}
 							}
 						})

@@ -177,34 +177,34 @@ export default {
 					});
 				}
 			} else {
-				// this.onButtonToUrl(data).then(res => {
-				// 	console.log('footBTN :', res);
-				// 	if (data.button && data.button.button_type === 'delete') {
-				// 		if (res.state === 'SUCCESS') {
-				// 			this.$refs.bxList.onRefresh();
-				// 		}
-				// 	}
-				// 	if (data.button && data.button.button_type === 'detail') {
-				// 		let row = res.row;
-				// 		let btn = res.button;
-				// 		let params = {
-				// 			type: 'detail',
-				// 			condition: [
-				// 				{
-				// 					colName: 'id',
-				// 					ruleType: 'in',
-				// 					value: row.id
-				// 				}
-				// 			],
-				// 			serviceName: btn.service_name,
-				// 			defaultVal: row
-				// 		};
-				// 		console.log('点击了【有效】的公共编辑按钮', row);
-				// 		uni.navigateTo({
-				// 			url: '/pages/public/formPage/formPage?params=' + JSON.stringify(params)
-				// 		});
-				// 	}
-				// });
+				this.onButtonToUrl(data).then(res => {
+					console.log('footBTN :', res);
+					if (data.button && data.button.button_type === 'delete') {
+						if (res.state === 'SUCCESS') {
+							this.$refs.bxList.onRefresh();
+						}
+					}
+					if (data.button && data.button.button_type === 'detail') {
+						let row = res.row;
+						let btn = res.button;
+						let params = {
+							type: 'detail',
+							condition: [
+								{
+									colName: 'id',
+									ruleType: 'in',
+									value: row.id
+								}
+							],
+							serviceName: btn.service_name,
+							defaultVal: row
+						};
+						console.log('点击了【有效】的公共编辑按钮', row);
+						uni.navigateTo({
+							url: '/pages/formPage/formPage?params=' + JSON.stringify(params)
+						});
+					}
+				});
 			}
 			console.log('clickFootBtn:', data);
 		},

@@ -1,5 +1,5 @@
 <template>
-	<view class="list-wrap">
+	<view class="">
 		<view class="list-wrap">
 			<scroll-view scroll-x class="bg-white nav cu-bar" v-if="listType === 'proc' && tabList.length > 1">
 				<view class="flex text-center ">
@@ -151,8 +151,8 @@ export default {
 									//TODO handle the exception
 								}
 								if (
-									// item.button_type === 'edit' ||
-									// item.button_type === 'delete' ||
+									item.button_type === 'edit' ||
+									item.button_type === 'delete' ||
 									item.button_type === 'procdetail' ||
 									((item.button_type === 'customize' && more_config && more_config.type === 'share') || more_config.type === 'qrcode') ||
 									more_config.type === 'primary' ||
@@ -561,6 +561,7 @@ export default {
 <style lang="scss" scoped>
 .list-wrap {
 	width: 100%;
+	height: 100vh;
 	display: flex;
 	flex-direction: column;
 	.current-tab {

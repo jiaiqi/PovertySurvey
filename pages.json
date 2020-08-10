@@ -5,12 +5,6 @@
 			"style": {}
 		},
 		{
-			"path": "pages/index/index",
-			"style": {
-				"navigationBarTitleText": "生活能力评估"
-			}
-		},
-		{
 			"path": "pages/accountExec/accountExec",
 			"style": {
 				"navigationBarTitleText": "登录"
@@ -29,12 +23,27 @@
 		 {
 			"path": "pages/article/article",
 			"style": {}
+		},
+		 {
+			"path": "pages/treeSelect/treeSelect",
+			"style": {}
+		},
+		{
+			"path": "pages/listdesc/listdesc",
+			"style": {}
+		},
+		{
+			"path": "pages/addInfo/addInfo",
+			"style": {}
 		}
 	],
 	"globalStyle": {
 		"navigationBarTitleText": "特困人员生活能力评估",
 		"navigationBarBackgroundColor": "#0081ff",
-		"backgroundColor": "#F8F8F8"
+		"backgroundColor": "#F8F8F8",
+		"usingComponents": {
+			"ly-tree-node": "/components/ly-tree/ly-tree-node"
+		}
 	}
 	// "tabBar": {
 	// 	"color" : "#7A7E83",

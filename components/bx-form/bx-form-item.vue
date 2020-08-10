@@ -1,11 +1,15 @@
 <template>
 	<view class="bx-form-item">
 		<view
-			class="cu-form-group itemwrap" 
+			class="cu-form-group itemwrap"
 			v-if="fieldData.display"
 			:class="{ 'form-detail': pageFormType === 'detail', flexColumn: fieldData.moreConfig && fieldData.moreConfig.labelPosition === 'top' }"
 		>
-			<view class="title" :class="!valid.valid ? 'valid_error' : ''" v-if="fieldData.col_type !== 'Image' || (fieldData.col_type === 'Image' && !fieldData.value)">
+			<view
+				class="title"
+				:class="!valid.valid ? 'valid_error' : ''"
+				v-if="pageFormType === 'detail' && fieldData.moreConfig && fieldData.moreConfig.hideLabel == true ? false : true"
+			>
 				<text class="text-red text-shadow" v-show="fieldData.isRequire">*</text>
 				{{ fieldData.label }}:
 				<text v-show="!valid.valid">({{ valid.msg }})</text>
@@ -36,12 +40,12 @@
 			<view
 				class="form-content"
 				:class="{
-					alo_radio: fieldData.type === 'radio' || fieldData.type === 'radioFk' || fieldData.type === 'checkbox' || fieldData.type === 'checkbox' || fieldData.type === 'images',
+					alo_radio: fieldData.type === 'radio' || fieldData.type === 'radioFk' || fieldData.type === 'checkbox' || fieldData.type === 'checkbox' || fieldData.type === 'images'|| fieldData.type === 'file',
 					valid_error: !valid.valid
 				}"
 				v-if="pageFormType === 'form' || pageFormType === 'add' || pageFormType === 'update'"
 			>
-				<radio-group @change="radioChange" v-if="fieldData.type === 'radio'" :class="!valid.valid ? 'valid_error' : ''">
+				<radio-group @change="radioChange" v-if="fieldData.type === 'radio'" class="radio-group" :class="!valid.valid ? 'valid_error' : ''">
 					<radio
 						color="#0081ff"
 						:key="index"
@@ -51,27 +55,25 @@
 						:checked="itema === fieldData.value"
 						:value="itema"
 					>
-						<span style="flex: 1;padding-left: 2rpx;">{{ itema }}</span>
+						<text style="flex: 1;padding-left: 2rpx;">{{ itema }}</text>
 					</radio>
 				</radio-group>
-				<radio-group @change="radioChange" v-else-if="fieldData.type === 'radioFk'" :class="!valid.valid ? 'valid_error' : ''">
-					<radio
-						color="#0081ff"
-						:key="index"
-						v-for="(itema, index) in fieldData.options"
-						class="blue radio"
-						:disabled="fieldData.disabled ? fieldData.disabled : false"
-						:checked="!!fieldData.value && itema.value === fieldData.value"
-						:value="itema.value"
-					>
-						<!-- <view class="title">{{itema.label}}</view> -->
-						<span style="flex: 1;padding-left: 2rpx;">{{ itema.label }}</span>
-					</radio>
+				<radio-group @change="radioChange" v-else-if="fieldData.type === 'radioFk'" class="radio-group" :class="!valid.valid ? 'valid_error' : ''">
+					<label class="radio-item" v-for="(itema, index) in fieldData.options" :key="index">
+						<radio
+							color="#0081ff"
+							class="blue radio"
+							:disabled="fieldData.disabled ? fieldData.disabled : false"
+							:checked="!!fieldData.value && itema.value === fieldData.value"
+							:value="itema.value"
+						></radio>
+						<text style="flex: 1;padding-left: 2rpx;">{{ itema.label }}</text>
+					</label>
 				</radio-group>
 				<checkbox-group name="checkbox-group" class="checkbox-group" @change="radioChange" v-else-if="fieldData.type === 'checkbox'" :class="!valid.valid ? 'valid_error' : ''">
 					<label v-for="(item, index) in fieldData.options" :key="index">
 						<checkbox
-						 class="checkbox"
+							class="checkbox"
 							color="#0081ff"
 							:value="item"
 							:disabled="fieldData.disabled ? fieldData.disabled : false"
@@ -84,7 +86,7 @@
 					<label v-for="(item, index) in fieldData.options" :key="index" class="checkbox">
 						<checkbox
 							color="#0081ff"
-							:value="item.key"
+							:value="item.value ? item.value : item.key"
 							:disabled="fieldData.disabled ? fieldData.disabled : false"
 							:checked="fieldData && fieldData.value && isArray(fieldData.value) ? fieldData.value.indexOf(item.key) !== -1 : false"
 						/>
@@ -247,7 +249,13 @@
 					<input :placeholder="'点击选择' + fieldData.label" :value="treeSelectorShowValue" disabled :class="!valid.valid ? 'valid_error' : ''" name="input" />
 				</view>
 				<view v-else-if="fieldData.type === 'cascader'" @click="openCascader">
-					<input :placeholder="'点击选择' + fieldData.label" v-model="fieldData.value" disabled :class="!valid.valid ? 'valid_error' : ''" name="input" />
+					<input
+						:placeholder="'点击选择' + fieldData.label"
+						v-model="fieldData.showText ? fieldData.showText : fieldData.value"
+						disabled
+						:class="!valid.valid ? 'valid_error' : ''"
+						name="input"
+					/>
 				</view>
 				<view class="item-group flex align-center" style="" v-else-if="fieldData.type === 'input'">
 					<input
@@ -310,7 +318,12 @@
 			</view>
 		</view>
 		<uni-popup ref="popup" type="bottom" @change="changePopup">
-			<cascader-selector @getCascaderValue="getCascaderValue" :srvInfo="fieldData.srvInfo" :defaultLineVal="defaultLineVal"></cascader-selector>
+			<cascader-selector
+				@getCascaderValue="getCascaderValue"
+				:srvInfo="fieldData.srvInfo"
+				:defaultLineVal="defaultLineVal"
+				:defaultCondition="fieldData.option_list_v2 && fieldData.option_list_v2.conditions ? fieldData.option_list_v2.conditions : []"
+			></cascader-selector>
 		</uni-popup>
 	</view>
 </template>
@@ -416,7 +429,10 @@ export default {
 			picker: ['网络状况较差，请稍后进行选择'],
 			modelData: '',
 			oriPicker: [],
-			treeSelectorShowValue: '' //属性选择器input框中显示的值
+			treeSelectorShowValue: '', //属性选择器input框中显示的值
+			calcRule: {
+				//计算规则
+			}
 		};
 	},
 	updated() {},
@@ -488,19 +504,8 @@ export default {
 		if (this.field.condition && Array.isArray(this.field.condition)) {
 			// this.field.condition.forEach()
 		}
-		if (
-			this.service &&
-			(this.service == 'srvzhxq_guest_mgmt_yezhu_add' ||
-				this.service == 'srvzhxq_guest_mgmt_yezhu_update' ||
-				this.service == 'srvzhxq_repairs_add' ||
-				this.service == 'srvzhxq_clgl_add' ||
-				(this.service === 'srvzhxq_syrk_add' &&
-					this.field.condition &&
-					Array.isArray(this.field.condition) &&
-					this.field.condition.length > 0 &&
-					this.field.condition[0].colName === this.field.condition[0].value))
-		) {
-			this.getShareRoomNum().then(s => {
+		if (this.fieldData.type === 'treeSelector') {
+			this.getTreeSelectorData().then(_ => {
 				let fieldData = this.fieldData;
 				if (fieldData.type === 'treeSelector') {
 					if (fieldData.colData && fieldData.value) {
@@ -510,21 +515,7 @@ export default {
 					}
 				}
 			});
-		} else {
-			if (this.fieldData.type === 'treeSelector') {
-				this.getTreeSelectorData().then(_ => {
-					let fieldData = this.fieldData;
-					if (fieldData.type === 'treeSelector') {
-						if (fieldData.colData && fieldData.value) {
-							this.treeSelectorShowValue = fieldData.colData[fieldData.option_list_v2.key_disp_col];
-						} else if (!fieldData.colData || !fieldData.value) {
-							this.treeSelectorShowValue = fieldData.value;
-						}
-					}
-				});
-			}
 		}
-
 		console.log('this.fieldData', this.fieldData);
 	},
 	created() {
@@ -553,6 +544,21 @@ export default {
 		if (this.fieldData.type === 'cascader') {
 			this.formData['serviceName'] = this.fieldData.srvInfo.serviceName;
 			this.formData['app_no'] = this.fieldData.srvInfo.appNo;
+			let cond = [
+				{
+					colName:this.fieldData.srvInfo.refed_col,
+					ruleType:"eq",
+					value:this.fieldData.value
+				}
+			]
+			if(this.fieldData.value){
+				this.getTreeSelectorData(cond)
+			}else{
+				this.getTreeSelectorData()
+			}
+			
+			// this.fieldData.value = val[this.fieldData.srvInfo.refed_col];
+			// this.fieldData.showText = val[this.fieldData.srvInfo.key_disp_col];
 		}
 		if (this.fieldData.type === 'treeSelector') {
 			// this.getTreeSelectorData();
@@ -971,7 +977,6 @@ export default {
 			});
 		},
 		getCascaderValue(val, btnType) {
-			console.log(val);
 			if (btnType === 'sure') {
 				this.$refs.popup.close();
 				if (val) {
@@ -980,7 +985,13 @@ export default {
 					if (this.fieldData.srvInfo.column) {
 						this.fieldData.value = val[this.fieldData.srvInfo.column];
 					} else {
-						this.fieldData.value = val.path_name;
+						if (this.fieldData.srvInfo.refed_col && this.fieldData.srvInfo.key_disp_col) {
+							this.fieldData.value = val[this.fieldData.srvInfo.refed_col];
+							this.fieldData.showText = val[this.fieldData.srvInfo.key_disp_col];
+							// this.fieldData.showText = val[this.fieldData.srvInfo.key_disp_col].replace('/','');
+						} else {
+							this.fieldData.value = val.path_name;
+						}
 					}
 				} else {
 					this.$emit('get-cascader-val');
@@ -1008,89 +1019,7 @@ export default {
 		onTreeGridChange(e) {
 			console.log('onTreeGridChange', e);
 		},
-		async getShareRoomNum(serv) {
-			let user = uni.getStorageSync('basics_info').picp;
-			const url = this.getServiceUrl('zhxq', 'srvzhxq_syrk_select', 'select');
-			let serviceName = 'srvzhxq_syrk_select';
-			if (serv && serv === 'srvzhxq_syrk_wuye_add') {
-				let condition = [];
-				let url = this.getServiceUrl(uni.getStorageSync('activeApp'), 'srvzhxq_syrk_select', 'select');
-				let req = {
-					serviceName: 'srvzhxq_syrk_select',
-					colNames: ['*'],
-					condition: [
-						{ colName: 'is_fuzeren', ruleType: 'in', value: '是' },
-						{ colName: 'openid', ruleType: 'eq', value: uni.getStorageSync('login_user_info').user_no },
-						{ colName: 'status', ruleType: 'eq', value: '有效' }
-					]
-				};
-				let houseList = await this.$http.post(url, req);
-				if (houseList.data.state === 'SUCCESS') {
-					houseList = houseList.data.data.map(item => {
-						return item.fwbm;
-					});
-					if (Array.isArray(houseList) && houseList.length > 0) {
-						condition = [{ colName: 'fwbm', ruleType: 'in', value: houseList.toString() }];
-						serviceName = 'srvzhxq_buiding_house_select';
-						let jig = await this.getTreeSelectorData(condition, serviceName);
-					} else {
-						uni.showToast({
-							title: '暂无数据',
-							icon: 'none'
-						});
-					}
-				}
-			} else {
-				let req = {
-					serviceName: 'srvzhxq_syrk_select',
-					colNames: ['*'],
-					condition: [
-						{ colName: 'gmsfhm', ruleType: 'eq', value: user },
-						{ colName: 'proc_status', ruleType: 'eq', value: '完成' },
-						{ colName: 'status', ruleType: 'eq', value: '有效' }
-						// { colName: 'is_fuzeren', ruleType: 'eq', value: '是' }
-					]
-				};
-
-				const res = await this.$http.post(url, req);
-				if (res.data.data.length > 0) {
-					let arr = [];
-					res.data.data.forEach(item => {
-						arr.push(item.fwbm);
-					});
-					let syr = arr.toString();
-					let cond = [
-						{
-							colName: 'fwbm',
-							ruleType: 'in',
-							value: syr
-						}
-					];
-					if (serv != 'srvzhxq_clgl_add' || serv != 'srvzhxq_repairs_add') {
-						serviceName = 'srvzhxq_buiding_house_select';
-					} else {
-						serviceName = this.fieldData.option_list_v2.serviceName;
-						if (this.fieldData.column == 'glry') {
-							cond = [
-								{
-									colName: 'fwbm',
-									ruleType: 'eq',
-									value: this.fieldsModel.fwbm
-								}
-							];
-						}
-
-						console.log('--============-------', this.fieldsModel);
-					}
-					let jig = await this.getTreeSelectorData(cond, serviceName);
-					console.log('jig=====>>>', jig);
-					return jig;
-				}
-			}
-		},
-
 		async getTreeSelectorData(cond, serv) {
-			console.log('detailFiledDatadetailFiledData', this.detailFiledData);
 			let self = this;
 			let req = {
 				serviceName: serv ? serv : self.fieldData.option_list_v2 ? self.fieldData.option_list_v2.serviceName : '',
@@ -1102,14 +1031,12 @@ export default {
 			} else {
 				appName = uni.getStorageSync('activeApp');
 			}
-			console.log('-===-=-==-=-=-=-=-=', self.modelData, this.procData);
 			let fieldModelsData = self.deepClone(self.fieldsModel);
 			if (!self.procData.id) {
 				fieldModelsData = self.deepClone(self.fieldsModel);
 			} else {
 				fieldModelsData = self.deepClone(self.procData);
 			}
-
 			// #ifdef H5
 			top.user = uni.getStorageSync('login_user_info');
 			// #endif
@@ -1122,11 +1049,6 @@ export default {
 				self.fieldData.option_list_v2.conditions.length > 0
 			) {
 				let condition = self.deepClone(self.fieldData.option_list_v2.conditions);
-				// if (self.fieldData.condition && Array.isArray(self.fieldData.condition)) {
-				// 	;
-				// 	// condition = condition.concat(self.fieldData.condition)
-				// }
-
 				condition = condition.map(item => {
 					if (item.value.indexOf('data.') !== -1) {
 						let colName = item.value.slice(item.value.indexOf('data.') + 5);
@@ -1150,72 +1072,44 @@ export default {
 				req.condition = [{ colName: 'dept_no', ruleType: 'like', value: 'bx100sys' }];
 				appName = 'sso';
 			}
+			console.log(this.fieldData);
+			let option_list_v2 = this.fieldData.option_list_v2;
+			if (option_list_v2.is_tree === true) {
+				req['treeData'] = true;
+			}
 			let res = await self.onRequest('select', req.serviceName, req, appName);
-			console.log('0000000000000000000', res, this.service);
 			if (res.data.state === 'SUCCESS' && res.data.data.length > 0) {
-				if (
-					self.service &&
-					(self.service == 'srvzhxq_syrk_add' ||
-						self.service == 'srvzhxq_guest_mgmt_yezhu_add' ||
-						self.service == 'srvzhxq_guest_mgmt_yezhu_update' ||
-						self.service == 'srvzhxq_clgl_add' ||
-						self.service == 'srvzhxq_repairs_add')
-				) {
-					self.treeSelectorData = [];
-					res.data.data.forEach(item => {
-						self.treeSelectorData.push(item);
+				let hasParentNo = res.data.data.filter(item => item.parent_no).length;
+				if (hasParentNo && !req['treeData']) {
+					self.treeSelectorData = self.treeReform(res.data.data, 'parent_no', 'no', self.fieldData.option_list_v2);
+					self.treeSelectorData = self.treeSelectorData.map((item, index) => {
+						let a = {
+							title: '',
+							name: '',
+							icon: '',
+							seq: '',
+							link: '',
+							type: 'button',
+							_childNode: []
+						};
+						a = Object.assign(a, item);
+						a.title = item.pr_name;
+						a.name = item.pr_name;
+						a._childNode = item._childNode;
+						a.no = item.no;
+						a.parent_no = item.parent_no;
+						return a;
 					});
-					console.log('self.fieldData', self.fieldData);
-					self.treeSelectorData.forEach(item => {
-						if (self.fieldData.option_list_v2 && item[self.fieldData.option_list_v2.refed_col] === self.fieldData.value) {
-							self.fieldData['colData'] = item;
-						} else if (self.fieldData.option_list_v2 && item[self.fieldData.option_list_v2.refed_col] && !self.fieldData.value) {
-							let colData = self.deepClone(item);
-							let refed_col = self.fieldData.option_list_v2.refed_col;
-							if (
-								colData[refed_col] &&
-								colData['_' + refed_col + '_disp'] &&
-								self.fieldData.condition &&
-								Array.isArray(self.fieldData.condition) &&
-								self.fieldData.condition.length > 0
-							) {
-								self.fieldData.option_list_v2['key_disp_col'] = '_' + refed_col + '_disp';
-								self.fieldData['colData'] = item;
-							}
-						}
-					});
-					console.log('self.treeSelectorData', self.treeSelectorData);
 				} else {
-					let hasParentNo = res.data.data.filter(item => item.parent_no).length;
-					if (hasParentNo) {
-						self.treeSelectorData = self.treeReform(res.data.data, 'parent_no', 'no', self.fieldData.option_list_v2);
-						self.treeSelectorData = self.treeSelectorData.map((item, index) => {
-							let a = {
-								title: '',
-								name: '',
-								icon: '',
-								seq: '',
-								link: '',
-								type: 'button',
-								_childNode: []
-							};
-							a = Object.assign(a, item);
-							a.title = item.pr_name;
-							a.name = item.pr_name;
-							a._childNode = item._childNode;
-							a.no = item.no;
-							a.parent_no = item.parent_no;
-							return a;
-						});
-					} else {
-						self.treeSelectorData = res.data.data;
-					}
-					self.treeSelectorData.forEach(item => {
-						if (self.fieldData.option_list_v2 && item[self.fieldData.option_list_v2.refed_col] === self.fieldData.value) {
-							self.fieldData['colData'] = item;
-						}
-					});
+					self.treeSelectorData = res.data.data;
 				}
+				self.treeSelectorData.forEach(item => {
+					if (self.fieldData.option_list_v2 && item[self.fieldData.option_list_v2.refed_col] === self.fieldData.value) {
+						self.fieldData['colData'] = item;
+						// 将冗余数据传给父组件
+						self.$emit('getRedundantData', self.fieldData);
+					}
+				});
 			}
 		}
 	},
@@ -1272,16 +1166,24 @@ export default {
 	radio-group {
 		width: 100%;
 	}
+	.radio-group {
+		display: flex;
+		// flex-direction: column;
+		flex-wrap: wrap;
+		.radio-item {
+			min-width: 30%;
+			margin-right: 20rpx;
+		}
+	}
 	.radio {
-
-		min-width: 21%;
+		// min-width: 21%;
 		// margin-bottom: 10rpx;
 		margin: 10rpx;
 		label {
 			line-height: 70rpx;
 		}
 	}
-	.checkbox-group{
+	.checkbox-group {
 		display: flex;
 		flex-wrap: wrap;
 		.checkbox {
@@ -1289,7 +1191,6 @@ export default {
 			margin: 10px 5px 10px 10px;
 		}
 	}
-	
 }
 
 /* #ifdef MP-WEIXIN */
@@ -1388,7 +1289,7 @@ uni-text.input-icon {
 	// border-bottom: 1px dashed #efefef;
 	min-height: 30px;
 	padding: 0rpx 20rpx;
-	align-items: center;
+	align-items: flex-start;
 	&.flexColumn {
 		flex-direction: column;
 		align-items: flex-start;
@@ -1412,7 +1313,7 @@ uni-text.input-icon {
 			width: 100%;
 			display: flex;
 			justify-content: center;
-			.headimg{
+			.headimg {
 				width: auto;
 				height: auto;
 				width: 100px;

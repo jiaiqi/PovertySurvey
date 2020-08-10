@@ -22,6 +22,10 @@ let FormateDate = function(date) {
 //添加请求拦截器
 fly.interceptors.request.use((request) => {
 	//给所有请求添加自定义header
+	uni.showLoading({
+		mask: true,
+		title: "加载中"
+	})
 	const outTime = uni.getStorageSync("expire_timestamp") //过期时间
 	const date = parseInt(new Date().getTime() / 1000)
 	if (outTime) {
@@ -32,10 +36,8 @@ fly.interceptors.request.use((request) => {
 	console.log('api.onTicket', api.onTicket, api.ticket, bxAuthTicket)
 	if (api.onTicket) {
 		request.headers["bx_auth_ticket"] = api.ticket
-		console.log('api.onTicket', api.onTicket, api.ticket)
 	} else {
 		if (bxAuthTicket) {
-			console.log('bxAuthTicket', bxAuthTicket)
 			request.headers["bx_auth_ticket"] = bxAuthTicket
 		} else {
 			// #ifdef H5
@@ -44,7 +46,7 @@ fly.interceptors.request.use((request) => {
 			})
 			// #endif
 			// #ifdef MP-WEIXIN
-			Vue.prototype.wxLogin()
+			// Vue.prototype.wxLogin()
 			// #endif
 		}
 	}
@@ -61,9 +63,13 @@ fly.interceptors.request.use((request) => {
 //添加响应拦截器，响应拦截器会在then/catch处理之前执行
 fly.interceptors.response.use(
 	(res) => {
+		uni.hideLoading()
 		//只将请求结果的data字段返回
 		if (res.data.resultCode === "0011") { //未登录
+			let requestUrl = decodeURIComponent(res.request.headers.requrl)
+			uni.setStorageSync("backUrl", requestUrl)
 			uni.setStorageSync('is_login', false)
+			uni.setStorageSync('isLogin', false)
 			// #ifdef H5
 			uni.navigateTo({
 				url: '/pages/accountExec/accountExec'

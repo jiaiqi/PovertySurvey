@@ -1,12 +1,7 @@
 <template>
 	<view class="list-item-wrap">
 		<view class="list-item flex" v-if="viewType === 'normal'">
-			<image
-				class="main-image"
-				v-if="listData.img&&listData.img.value"
-				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' +listData.img.value"
-				:imgColName="'img'"
-			></image>
+			<image class="main-image" v-if="listData.img" :src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + listData.img.value" :imgColName="'img'"></image>
 			<image
 				class="main-image"
 				v-if="viewTemp['img']"
@@ -193,11 +188,11 @@ export default {
 				footer: ''
 			},
 			listTemp: {
-				img: 'photo',
-				title: 'item_name',
-				subtitle: 'create_time',
-				content: 'item_no',
-				footer: 'div_type'
+				// img: 'photo',
+				// title: 'item_name',
+				// subtitle: 'create_time',
+				// content: 'item_no',
+				// footer: 'div_type'
 			},
 			listData: {},
 			rowButtons: [],
@@ -381,6 +376,7 @@ export default {
 					let listTemp = this.listTemp;
 					if (this.listConfig && this.listConfig.more_config && this.listConfig.more_config.listTemp) {
 						listTemp = this.listConfig.more_config.listTemp;
+						this.listTemp = listTemp;
 					}
 					if (srvCols && Array.isArray(srvCols) && srvCols.length > 0) {
 						srvCols.forEach(col => {
@@ -388,10 +384,10 @@ export default {
 								if (col.columns === listTemp[key]) {
 									let obj = {
 										label: col.label,
-										value: this.itemData[col.columns]
+										value: self.itemData[col.columns]
 									};
-									this.listData[key] = obj;
-									this.$set(this.listData, key, obj);
+									self.listData[key] = obj;
+									self.$set(self.listData, key, obj);
 								}
 							});
 						});
@@ -531,17 +527,28 @@ export default {
 
 <style lang="scss" scoped>
 .list-item-wrap {
-	width: auto;
 	box-sizing: border-box;
-	border-bottom: dashed 1px #efefef;
+	// border-bottom: dashed 1px #efefef;
 	background-color: #fff;
-	width: calc(100%);
-	margin: 10rpx auto;
+	// margin: 10rpx auto 0;
+	margin: 0 auto 10rpx;
+	position: relative;
+	&::before {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 2px;
+		background: repeating-linear-gradient(-45deg, #ff6c6c 0, #ff6c6c 20%, transparent 0, transparent 25%, #1989fa 0, #1989fa 45%, transparent 0, transparent 50%);
+		background-size: 80px;
+		content: '';
+	}
+
 	.list-item {
 		// width: calc(100% - 40upx);
 		display: flex;
 		justify-content: space-between;
-		align-items: center;
+		// align-items: center;
 		padding: 10upx;
 		// margin: 20upx;
 		box-sizing: border-box;
@@ -550,6 +557,7 @@ export default {
 			height: 220upx;
 			border-radius: 5upx;
 			margin-right: 20upx;
+			border: dashed 1px #efefef;
 		}
 		.content-box {
 			transition: all 1s ease-out;
@@ -606,6 +614,7 @@ export default {
 				display: flex;
 				align-items: center;
 				min-width: 50%;
+				line-height: 20px;
 			}
 
 			.context {
@@ -614,6 +623,7 @@ export default {
 				display: flex;
 				justify-content: space-between;
 				flex-wrap: wrap;
+				padding: 10rpx 0;
 				.content {
 					flex: 1;
 				}

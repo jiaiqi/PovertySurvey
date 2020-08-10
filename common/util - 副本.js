@@ -320,7 +320,6 @@ export default {
 			]}
 			if(e){
 				let response = await this.$http.post(url, req);
-				console.log('srvfile_attachment_select', response);
 				if (response.data.state === 'SUCCESS' && response.data.data.length > 0) {
 					return response.data.data
 				}

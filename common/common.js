@@ -27,7 +27,6 @@ export default {
         a['key'] = item[ke]
         a['value'] = item[val]
         a['name'] = item[name]
-        // console.log('====a:' + a)
         if (item[icon] === null) {
           a['icon'] = '../../assets/img/icons/init/menu-icon.png'
         } else {
@@ -317,19 +316,14 @@ export default {
         return arr.join()
       }
       cols = colNamesArr(type.content)
-      // console.log('cols:')
-      // console.log(cols)
       labs = await this.colToLable(type.serviceName, cols)
-      // console.log(labs)
       if (typeCfg === '1') {
         // let Obj = resData.map(function (item, index) {
         let Obj = resData.map((item, index) => {
           let columnsCfg = type.content
           function colToL (c) {
-            // cols
             let L = labs
             let arr = L.filter(item => item.columns === c)
-            // console.log(arr)
             return arr[0] === undefined ? '' : arr[0].label
           }
 

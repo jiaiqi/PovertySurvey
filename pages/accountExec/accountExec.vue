@@ -33,12 +33,7 @@
 						/>
 					</view>
 				</view>
-				<button
-					class="confirm-btn bg-gradual-green text-green"
-					@click="userLogined"
-				>
-					{{ isBindUser ? '提交绑定' : '登录' }}
-				</button>
+				<button class="confirm-btn bg-gradual-green text-green" @click="userLogined">{{ isBindUser ? '提交绑定' : '登录' }}</button>
 				<button v-if="(client_env === 'web' || client_env === 'app' || client_env === 'wxh5') && isShowUserLogin" class="confirm-btn bg-gradual-orange text-green" @click="toBack">
 					暂不，继续使用
 				</button>
@@ -74,13 +69,8 @@ export default {
 			setshopData: false
 		};
 	},
-	created() {
-	},
-	mounted() {
-	},
 	onShow() {
 		uni.hideLoading();
-		
 		let self = this;
 		// 根据登录状态跳转
 		if (uni.getStorageSync('isLogin') && uni.getStorageSync('login_user_info')) {
@@ -95,18 +85,14 @@ export default {
 		} else {
 			console.log('进行初始化授权', uni.getStorageSync('isLogin'));
 			// self.initLogin();
-			self.wxLogin()
 		}
 	},
 	beforeDestroy() {
-		uni.$emit('isToLogin', false);
+		uni.$emit('hasToAuthPage', true);
 	},
 	methods: {
 		getPhoneNumber(e) {
 			console.log(e, '手机号：');
-			console.log(e.detail.errMsg);
-			console.log(e.detail.iv);
-			console.log(e.detail.encryptedData);
 		},
 		toBack() {
 			if (uni.getStorageSync('isLogin')) {
@@ -126,7 +112,7 @@ export default {
 		navBack() {
 			let self = this;
 			let pageInfo = getCurrentPages();
-			uni.setStorageSync('isToLogin', false);
+			uni.setStorageSync('hasToAuthPage', true);
 			uni
 				.navigateBack({
 					animationDuration: 200
@@ -200,10 +186,6 @@ export default {
 			}
 			this.$http.post(url, req).then(response => {
 				console.log('授权 response:', response, JSON.stringify(response.data));
-				// uni.showModal({
-				// 	content: "请求完成"+ JSON.stringify(response.data),
-				// 	showCancel: false
-				// });
 				if (response.data.response[0].response && response.data.response[0].response.authUrl) {
 					uni.showToast({
 						title: '授权成功',
@@ -241,7 +223,6 @@ export default {
 			if (res.data.state === 'SUCCESS') {
 				let wxUser = res.data.data[0];
 				uni.setStorageSync('backWxUserInfo', wxUser);
-				uni.setStorageSync('wxuserinfo', wxUser);
 			}
 		},
 		saveWxUser() {
@@ -280,7 +261,7 @@ export default {
 									that.openid = resData.login_user_info.openid;
 									uni.setStorageSync('user_type', '匿名用户'); //微信环境匿名用户
 									// console.log('微信小程序环境---未登录');
-									that.loginNavUrl()
+									that.loginNavUrl();
 								} else {
 									// 已绑定账号用户登录
 									uni.setStorageSync('is_login', true);
@@ -369,9 +350,10 @@ export default {
 					}
 					uni.setStorageSync('isLogin', true);
 					that.getWxUserInfo();
-					uni.navigateBack({
-						delta: 1
-					});
+					that.loginNavUrl();
+					// uni.navigateBack({
+					// 	delta: 1
+					// });
 				}
 			} else {
 				this.user.pwd = '';
@@ -386,9 +368,19 @@ export default {
 			let self = this;
 			let isLogin = uni.getStorageSync('isLogin');
 			// 根据是否小程序环境跳转
-			// #ifdef MP-WEIXIN
 			let routeIndexs = getCurrentPages();
-			if (routeIndexs.length >1) {
+			// #ifdef MP-WEIXIN
+			let backUrl = uni.getStorageSync('backUrl');
+			if (backUrl && backUrl === '/pages/home/home') {
+				uni.reLaunch({
+					url: self.$api.homePath,
+					success: function() {
+						uni.setStorageSync('isLogin', true);
+					}
+				});
+				return;
+			}
+			if (routeIndexs.length > 1) {
 				uni.navigateBack({
 					delta: 1
 				});
@@ -402,28 +394,40 @@ export default {
 			}
 			// #endif
 			// #ifdef H5
-			if (self.getBackUrl()) {
-				console.log('that.getBackUrl() 02', self.getBackUrl());
-				uni.hideToast();
-				uni.hideLoading();
-				uni.reLaunch({
-					url: self.getBackUrl(),
-					success: function() {
-						uni.setStorageSync('isLogin', true);
-						uni.removeStorageSync('backUrl');
-					}
-				});
-			} else {
-				// alert("跳转home")
-				// alert("准备跳转Home"+this.getBackUrl())
-				uni.reLaunch({
-					url: self.$api.homePath,
-					success: function() {
-						uni.setStorageSync('isLogin', true);
-						uni.removeStorageSync('backUrl');
-					}
-				});
-			}
+			// if (routeIndexs.length > 1) {
+			// 	uni.navigateBack({
+			// 		delta: 1
+			// 	});
+			// } else {
+			uni.reLaunch({
+				url: self.$api.homePath,
+				success: function() {
+					uni.setStorageSync('isLogin', true);
+				}
+			});
+			// }
+			// if (self.getBackUrl()) {
+			// 	console.log('that.getBackUrl() 02', self.getBackUrl());
+			// 	uni.hideToast();
+			// 	uni.hideLoading();
+			// 	uni.reLaunch({
+			// 		url: self.getBackUrl(),
+			// 		success: function() {
+			// 			uni.setStorageSync('isLogin', true);
+			// 			uni.removeStorageSync('backUrl');
+			// 		}
+			// 	});
+			// } else {
+			// 	// alert("跳转home")
+			// 	// alert("准备跳转Home"+this.getBackUrl())
+			// 	uni.reLaunch({
+			// 		url: self.$api.homePath,
+			// 		success: function() {
+			// 			uni.setStorageSync('isLogin', true);
+			// 			uni.removeStorageSync('backUrl');
+			// 		}
+			// 	});
+			// }
 			// #endif
 		},
 		getBackUrl: function() {
@@ -449,7 +453,7 @@ export default {
 			} else {
 				return false;
 			}
-		},
+		}
 	}
 };
 </script>

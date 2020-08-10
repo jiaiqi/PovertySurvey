@@ -1,6 +1,6 @@
 <template>
-	<view class="cu-card article " style="min-height: 100vh;height: auto;">
-		<view class="cu-item" :class="{show:fields&&fields.length>0}">
+	<view class="cu-card articles " style="min-height: 100vh;height: auto;">
+		<view class="cu-item" :class="{ show: showItem }">
 			<view>
 				<bxform
 					:service="serviceName"
@@ -10,6 +10,7 @@
 					:BxformType="type"
 					:fields="fields"
 					v-if="fields.length > 0"
+					@onreset="resetForm"
 					@changeFieldModel="changeFieldModel"
 					:moreConfig="colsV2Data && colsV2Data.more_config ? colsV2Data.more_config : null"
 				></bxform>
@@ -21,6 +22,7 @@
 						<view class="child-service" v-for="item in childService" :key="item.service_name">
 							<view
 								class="bg-blue service"
+								v-if="item.foreign_key.section_name && item && item.childData && item.childData.data && Array.isArray(item.childData.data)"
 								:class="{
 									'bg-gray':
 										item.foreign_key &&
@@ -30,7 +32,6 @@
 										item.childData.data &&
 										item.childData.data.length === 0
 								}"
-								v-if="item.foreign_key.section_name && item.childData && item.childData.data && Array.isArray(item.childData.data)"
 								@click="toChildList(item)"
 							>
 								<!-- 标题 -->
@@ -38,6 +39,12 @@
 								<!-- 内容 -->
 								<text class="section_content" v-if="item.data && item.foreign_key.more_config && item.foreign_key.more_config.resultCol">
 									{{ item.data[item.foreign_key.more_config.resultCol] }}
+								</text>
+								<text
+									class="section_content"
+									v-if="!item.data || (item.data && item.foreign_key.more_config && !item.foreign_key.more_config.resultCol && !item.data[item.foreign_key.more_config.resultCol])"
+								>
+									未填写
 								</text>
 								<!-- 结论 -->
 								<text class="section_verdict"></text>
@@ -78,7 +85,8 @@ export default {
 			childService: [], // 子表
 			hasChildService: false, //是否拥有子表
 			showSublist: true, //显示子表
-			formDisabled: false
+			formDisabled: false,
+			showItem: false
 		};
 	},
 	computed: {
@@ -98,7 +106,6 @@ export default {
 				});
 				let fieldModel = data;
 			}
-
 			buttons.forEach(btn => {
 				if (btn.disp_exps) {
 					btn['display'] = eval(btn.disp_exps);
@@ -130,9 +137,21 @@ export default {
 		}
 		// #endif
 	},
+	onShow() {
+		let condition = this.condition;
+		if (this.type === 'detail' || this.type === 'update') {
+			this.getDetailfieldModel().then(res => {
+				if (this.params.formDisabled == true) {
+					this.formDisabled = true;
+				}
+				this.getFieldsV2(condition);
+			});
+		} else {
+			this.getFieldsV2(condition);
+		}
+	},
 	onLoad(option) {
 		let query = JSON.parse(decodeURIComponent(option.query ? option.query : option.params ? option.params : '{}'));
-		console.log('---------', option);
 		const destApp = query.destApp;
 		if (destApp) {
 			uni.setStorageSync('activeApp', destApp);
@@ -169,19 +188,35 @@ export default {
 		} else if (option.hasOwnProperty('params')) {
 			this.serviceName = this.params.serviceName;
 			this.type = this.params.type;
+			if (this.params.defaultCondition) {
+				this.defaultCondition = this.params.defaultCondition;
+			}
 			if (this.type === 'detail' || this.type === 'update') {
-				this.getDetailfieldModel();
+				this.getDetailfieldModel().then(res => {
+					if (this.params.formDisabled == true) {
+						this.formDisabled = true;
+					}
+					this.condition = this.params.condition;
+					// this.defaultVal = this.params.defaultVal;
+					let cond = [];
+					if (this.params.cond && Array.isArray(this.params.cond)) {
+						cond = this.params.cond;
+					}
+					this.getFieldsV2(cond);
+				});
+			} else {
+				if (this.params.formDisabled == true) {
+					this.formDisabled = true;
+				}
+				this.condition = this.params.condition;
+				// this.defaultVal = this.params.defaultVal;
+				let cond = [];
+				if (this.params.cond && Array.isArray(this.params.cond)) {
+					cond = this.params.cond;
+					this.condition = cond;
+				}
+				this.getFieldsV2(cond);
 			}
-			if (this.params.formDisabled == true) {
-				this.formDisabled = true;
-			}
-			this.condition = this.params.condition;
-			// this.defaultVal = this.params.defaultVal;
-			let cond = [];
-			if (this.params.cond && Array.isArray(this.params.cond)) {
-				cond = this.params.cond;
-			}
-			this.getFieldsV2(cond);
 		} else if (query.serviceName && query.type) {
 			this.serviceName = query.serviceName;
 			this.type = query.type;
@@ -203,6 +238,10 @@ export default {
 	},
 
 	methods: {
+		resetForm(e) {
+			// 重置表单
+			this.fields = this.deepClone(e);
+		},
 		toChildList(e) {
 			let data = this.deepClone(e);
 			let formData = this.defaultVal;
@@ -240,8 +279,20 @@ export default {
 									let params = {
 										type: 'add',
 										serviceName: e.service_name.replace('_select', '_add')
-										// "defaultVal": row
+										// defaultVal:formData
 									};
+									// referenced_column_name //被引用的字段
+									// column //子表字段
+									console.log(e);
+									if (e.foreign_key && e.foreign_key.referenced_column_name && e.foreign_key.column_name) {
+										params.defaultCondition = [
+											{
+												colName: e.foreign_key.referenced_column_name,
+												ruleType: 'eq',
+												value: formData[e.foreign_key.column_name]
+											}
+										];
+									}
 									uni.navigateTo({
 										url: '/pages/formPage/formPage?params=' + JSON.stringify(params)
 									});
@@ -289,7 +340,7 @@ export default {
 			if (this.formDisabled) {
 				type = 'detail';
 			}
-			let colVs = await this.getServiceV2(this.serviceName, type?type:this.type, type?type:this.type, app);
+			let colVs = await this.getServiceV2(this.serviceName, type ? type : this.type, type ? type : this.type, app);
 			if (this.formDisabled) {
 				colVs._fieldInfo.forEach(item => (item.disabled = true));
 			}
@@ -332,6 +383,7 @@ export default {
 				}
 			}
 			this.colsV2Data = colVs;
+			this.showItem = true;
 			let self = this;
 			switch (this.type) {
 				case 'update':
@@ -375,6 +427,7 @@ export default {
 								}
 								if (this.params.defaultVal) {
 									// 赋默认值
+									// field.value = this.params.defaultVal[field.column]
 								}
 							});
 						});
@@ -389,8 +442,9 @@ export default {
 			}
 		},
 		async getDetailfieldModel() {
-			let params = this.params;
+			let params = this.deepClone(this.params);
 			let app = uni.getStorageSync('activeApp');
+			params.serviceName = params.serviceName.replace('_update', '_select').replace('_add', '_select');
 			let url = this.getServiceUrl(app, params.serviceName, 'select');
 			const req = {
 				colNames: ['*'],
@@ -407,11 +461,9 @@ export default {
 			}
 		},
 		async onButton(e) {
-			let req = this.$refs.bxForm.getFieldModel();
+			let data = this.$refs.bxForm.getFieldModel();
+			let req = this.deepClone(data);
 			console.log(this.condition);
-			if ((e.service_name == 'srvzhxq_syrk_wuye_add' || e.service_name == 'srvzhxq_syrk_add') && (!req.proc_status || req.proc_status != '完成') && req) {
-				req.proc_status = '完成';
-			}
 			console.log(e, req);
 			switch (e.button_type) {
 				case 'edit':
@@ -444,6 +496,11 @@ export default {
 				case 'submit':
 					console.log('addServiceName:', e.service_name);
 					if (req) {
+						Object.keys(req).forEach(item => {
+							if (Array.isArray(req[item])) {
+								req[item] = req[item].toString();
+							}
+						});
 						req = [{ serviceName: e.service_name, data: [req] }];
 						let app = uni.getStorageSync('activeApp');
 						let url = this.getServiceUrl(app, e.service_name, 'add');
@@ -508,15 +565,6 @@ export default {
 							});
 						}
 					}
-					// const url = this.getServiceUrl(e.application, e.operate_service, 'operate');
-					// const req = [
-					//   {
-					//     data: [e.requestData],
-					//     serviceName: e.operate_service,
-					//     srvApp: e.application
-					//   }
-					// ];
-					// let res = await this.$http.post(url, req);
 					break;
 				default:
 					uni.showToast({
@@ -584,13 +632,13 @@ export default {
 		}
 	}
 }
-.article {
+.articles {
 	background-color: #c4e5ff !important;
-	.cu-item{
+	.cu-item {
 		opacity: 0;
-		&.show{
+		&.show {
 			opacity: 1;
-			transition:all 2s;
+			transition: all 2s;
 		}
 	}
 }

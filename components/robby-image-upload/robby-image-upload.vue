@@ -86,7 +86,9 @@
 		},
 		methods:{
 			toPage(){
+				debugger
 				if(this.settings.eventTarget){
+					// debugger
 					this.$emit("navTo",this.settings.eventTarget)
 					
 				}
@@ -356,7 +358,7 @@
 	.imageItem, .imageUpload{
 		width: 160upx;
 		height: 160upx;
-		margin: 10upx;
+		margin-right: 10upx;
 	}
 	
 	.imageDel{

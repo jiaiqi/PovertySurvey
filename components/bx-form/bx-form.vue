@@ -6,10 +6,10 @@
 			class="form-box-item"
 			:class="{
 				image: item.col_type === 'Image',
-				col2: item.moreConfig&&item.moreConfig.colSpan == 2,
-				col3: item.moreConfig&&item.moreConfig.colSpan == 3,
-				row2: item.moreConfig&&item.moreConfig.rowSpan == 2,
-				row3: item.moreConfig&&item.moreConfig.rowSpan == 3
+				col2: item.moreConfig && item.moreConfig.colSpan == 2,
+				col3: item.moreConfig && item.moreConfig.colSpan == 3,
+				row2: item.moreConfig && item.moreConfig.rowSpan == 2,
+				row3: item.moreConfig && item.moreConfig.rowSpan == 3
 			}"
 		>
 			<formItem
@@ -26,6 +26,7 @@
 				@on-value-blur="onValBlur($event)"
 				@get-cascader-val="getCascaderVal"
 				@picker-change="pickerchange"
+				@getRedundantData="getRedundantData"
 			></formItem>
 		</view>
 	</view>
@@ -34,6 +35,7 @@
 <script>
 import formItem from '@/components/bx-form/bx-form-item.vue';
 import evaluatorTo from '@/common/evaluator.js';
+import calculateTo from '@/common/calculate.js';
 export default {
 	name: 'bx-form',
 	components: { formItem },
@@ -98,15 +100,14 @@ export default {
 	},
 	data() {
 		return {
-			allField: this.fields,
+			allField: [],
 			fieldModel: {},
 			fieldData: {},
 			oldField: [],
 			oldFieldModel: {},
 			specialCol: [],
-			more_config: {
-				service_call_cfg: []
-			}
+			more_config: {},
+			calcAttr: {}
 		};
 	},
 	created() {
@@ -148,7 +149,6 @@ export default {
 		getAllField() {
 			let self = this;
 			console.log('getAllField', this.fields);
-			console.log('111111111111111111111111', this.allField);
 			if (this.fields.length > 0) {
 				let fields = this.deepClone(this.fields);
 				this.oldField = this.deepClone(this.fields);
@@ -185,8 +185,6 @@ export default {
 					});
 					return itemData;
 				});
-				this.allField.forEach(fileIf => {});
-				console.log('0000000000000000', this.allField);
 			}
 		},
 		onValChange(e) {
@@ -196,21 +194,6 @@ export default {
 			} else {
 				this.fieldModel[e.column] = e.value;
 			}
-			if (e.column === 'fwbm') {
-				if (e.condition && Array.isArray(e.condition) && e.condition.length > 0 && e.condition[0].colName === e.condition[0].value) {
-					e.condition.forEach(col => {
-						this.fieldModel[col.value] = e.colData[col.value];
-						this.$emit('changeFieldModel', this.fieldModel);
-						self.allField.forEach((field, index) => {
-							if (field.column === col.value) {
-								field.value = e.colData[col.value];
-								// self.$set(self.allField,index,field)
-							}
-						});
-					});
-				}
-			}
-
 			e.value = this.fieldModel[e.column];
 			const fieldModel = JSON.parse(JSON.stringify(this.fieldModel));
 			this.allField = this.allField.map((item, index) => {
@@ -225,10 +208,51 @@ export default {
 					let isIfShow = evaluatorTo(fieldModel, fileIf.formulaShow);
 					fileIf.display = isIfShow;
 				}
+				if (fileIf.calcAttr) {
+					let result = calculateTo(fieldModel, fileIf.calcAttr);
+					if (result || typeof result === 'number') {
+						// 有返回值或者返回值为0
+						fileIf.value = result;
+					}
+				}
+				if (e._colDatas.table_name === 'bxdaq_tkry_gzjygtnl' && fileIf.column === 'assess_result') {
+					if (
+						fieldModel.consciousness_level === '0' &&
+						(fieldModel.vision === '0' || fieldModel.vision === '1') &&
+						(fieldModel.hearing === '0' || fieldModel.hearing === '1') &&
+						fieldModel.communication === '0'
+					) {
+						fileIf.value = '能力完好';
+					}
+					if ((fieldModel.consciousness_level === '0' && (fieldModel.vision === '2' || fieldModel.hearing === '2')) || fieldModel.communication === '1') {
+						fileIf.value = '轻度受损';
+					}
+					if (
+						(fieldModel.consciousness_level === '0' && (fieldModel.vision === '3' || fieldModel.hearing === '3' || fieldModel.communication === '2')) ||
+						(fieldModel.consciousness_level === '1' &&
+							((fieldModel.vision === '3' ||
+								fieldModel.vision === '2' ||
+								fieldModel.vision === '1' ||
+								fieldModel.vision === '0' ||
+								fieldModel.hearing === '3' ||
+								fieldModel.hearing === '2' ||
+								fieldModel.hearing === '1' ||
+								fieldModel.hearing === '0') &&
+								(fieldModel.communication === '2' || fieldModel.communication === '1' || fieldModel.communication === '0')))
+					) {
+						fileIf.value = '中度受损';
+					}
+					if (
+						((fieldModel.consciousness_level === '0' || fieldModel.consciousness_level === '1') &&
+							(fieldModel.vision === '4' || fieldModel.hearing === '4' || fieldModel.communication === '3')) ||
+						fieldModel.consciousness_level === '2'
+					) {
+						fileIf.value = '重度受损';
+					}
+				}
 			});
-			// return
 			if (e.bx_col_type === 'fk' && e.colData && typeof e.colData === 'object' && Array.isArray(e.colData) !== true && Object.keys(e.colData).length > 0) {
-				//冗余
+				//如果当前值改变的字段是fk类型，遍历所有字段，如果有需要冗余此fk字段数据的字段，则进行冗余
 				this.allField.forEach(item => {
 					if (item.redundant && typeof item.redundant === 'object' && item.redundant.dependField === e.column) {
 						if (item.redundant.trigger === 'always') {
@@ -318,9 +342,27 @@ export default {
 				this.$emit('get-cascader-val');
 			}
 		},
+		getRedundantData(e) {
+			if (e.bx_col_type === 'fk' && e.colData && typeof e.colData === 'object' && Array.isArray(e.colData) !== true && Object.keys(e.colData).length > 0) {
+				// 拿到fk数据，遍历所有字段，如果有需要冗余此fk字段数据的字段，则进行冗余
+				this.allField.forEach(item => {
+					if (item.redundant && typeof item.redundant === 'object' && item.redundant.dependField === e.column) {
+						if (item.redundant.trigger === 'always') {
+							item.value = e.colData[item.redundant.refedCol];
+						} else if (item.redundant.trigger === 'isnull') {
+							if (!item.value) {
+								item.value = e.colData[item.redundant.refedCol];
+							}
+						}
+						this.fieldModel[item.column] = item.value;
+					}
+				});
+			}
+		},
 		onReset() {
-			this.allField = this.deepClone(this.oldField);
-			console.log(this.oldField, 'this.oldField');
+			let allField = this.deepClone(this.oldField);
+			// this.allField = allField
+			this.$emit('onreset', allField);
 			try {
 				return true;
 			} catch (e) {
@@ -369,7 +411,6 @@ export default {
 		&.image {
 			grid-row-end: span 3;
 			width: 100%;
-		
 		}
 		&.row2 {
 			grid-row-end: span 2;
