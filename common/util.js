@@ -316,6 +316,7 @@ export default {
 						fieldInfo.type = "cascader"
 						if (fieldInfo.option_list_v2) {
 							fieldInfo.srvInfo = fieldInfo.option_list_v2
+							fieldInfo.showText = ''
 						} else {
 							fieldInfo.srvInfo = {
 								serviceName: 'srvconfig_area_adj_select',

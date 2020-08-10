@@ -251,7 +251,7 @@
 				<view v-else-if="fieldData.type === 'cascader'" @click="openCascader">
 					<input
 						:placeholder="'点击选择' + fieldData.label"
-						v-model="fieldData.showText ? fieldData.showText : fieldData.value"
+						:value = "fieldData.showText"
 						disabled
 						:class="!valid.valid ? 'valid_error' : ''"
 						name="input"
@@ -552,11 +552,8 @@ export default {
 				}
 			]
 			if(this.fieldData.value){
-				this.getTreeSelectorData(cond)
-			}else{
-				this.getTreeSelectorData()
+				this.getCascaderText(cond)
 			}
-			
 			// this.fieldData.value = val[this.fieldData.srvInfo.refed_col];
 			// this.fieldData.showText = val[this.fieldData.srvInfo.key_disp_col];
 		}
@@ -1018,6 +1015,30 @@ export default {
 		},
 		onTreeGridChange(e) {
 			console.log('onTreeGridChange', e);
+		},
+		async getCascaderText(cond, serv){
+			let self = this;
+			let req = {
+				serviceName: serv ? serv : self.fieldData.option_list_v2 ? self.fieldData.option_list_v2.serviceName : '',
+				colNames: ['*']
+			};
+			if (cond) {
+				req.condition = cond;
+			}
+			let option_list_v2 = this.fieldData.option_list_v2;
+			if (option_list_v2.is_tree === true) {
+				req['treeData'] = true;
+			}
+			let appName = '';
+			if (self.fieldData.option_list_v2 && self.fieldData.option_list_v2.srv_app) {
+				appName = self.fieldData.option_list_v2.srv_app;
+			} else {
+				appName = uni.getStorageSync('activeApp');
+			}
+			let res = await self.onRequest('select', req.serviceName, req, appName);
+			if(res.data.state=="SUCCESS"&&res.data.data.length>0){
+				self.fieldData.showText =  res.data.data[0][self.fieldData.srvInfo.key_disp_col];
+			}
 		},
 		async getTreeSelectorData(cond, serv) {
 			let self = this;
