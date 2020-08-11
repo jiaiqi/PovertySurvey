@@ -6,10 +6,10 @@
 			<view class="wrapper">
 				<!-- <view class="left-top-sign">LOGIN</view> -->
 				<view class="welcome">
+					<!-- #ifdef H5 -->
 					欢迎回来！
-					<!-- #ifdef MP -->
-					<!-- <view v-if="client_env === 'wxmp'">点击登录按钮</view> -->
 					<!-- #endif -->
+				
 				</view>
 				<!-- #ifndef MP -->
 				<!-- 非小程序 -->
@@ -39,9 +39,13 @@
 				</button>
 				<!-- #endif -->
 				<!-- #ifdef MP-WEIXIN -->
+				<!-- #ifdef MP -->
+				申请获取你的公开信息(昵称、头像等)
+				<!-- <view v-if="client_env === 'wxmp'">点击登录按钮</view> -->
+				<!-- #endif -->
 				<!-- <button class="confirm-btn bg-blue text-black" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">获取手机号</button> -->
 				<button class="confirm-btn bg-gray text-green" lang="zh_CN" type="primary" open-type="getUserInfo" @getuserinfo="saveWxUser" :withCredentials="false" :disabled="disabled">
-					授权登录
+					微信授权
 				</button>
 				<button class="confirm-btn bg-grey text-black" type="default" @tap="navBack" :disabled="false">暂不授权</button>
 				<!-- #endif -->
@@ -511,6 +515,7 @@ page {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
+	align-items: center;
 }
 .back-btn {
 	position: absolute;

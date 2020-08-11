@@ -16,7 +16,7 @@
 			</view>
 			<view v-if="pageFormType === 'detail'" class="detail-text">
 				<view v-if="pageFormType === 'detail' && fieldData.type !== 'images' && fieldData.type !== 'snote' && fieldData.type !== 'Note'">
-					{{ dictShowValue ? dictShowValue : treeSelectorShowValue ? treeSelectorShowValue : fieldData.value }}
+					{{ fieldData.showText ? fieldData.showText : dictShowValue ? dictShowValue : treeSelectorShowValue ? treeSelectorShowValue : fieldData.value }}
 				</view>
 				<view class="" v-html="fieldData.value" v-if="pageFormType === 'detail' && (fieldData.type === 'snote' || fieldData.type === 'Note')"></view>
 				<!-- <view
@@ -40,7 +40,13 @@
 			<view
 				class="form-content"
 				:class="{
-					alo_radio: fieldData.type === 'radio' || fieldData.type === 'radioFk' || fieldData.type === 'checkbox' || fieldData.type === 'checkbox' || fieldData.type === 'images'|| fieldData.type === 'file',
+					alo_radio:
+						fieldData.type === 'radio' ||
+						fieldData.type === 'radioFk' ||
+						fieldData.type === 'checkbox' ||
+						fieldData.type === 'checkbox' ||
+						fieldData.type === 'images' ||
+						fieldData.type === 'file',
 					valid_error: !valid.valid
 				}"
 				v-if="pageFormType === 'form' || pageFormType === 'add' || pageFormType === 'update'"
@@ -114,16 +120,29 @@
 					></robby-image-upload>
 				</view>
 				<view class="" v-else-if="fieldData.type === 'file'">
+					<!-- #ifdef H5 -->
 					<attachment
 						mode="create"
 						:canUploadFile="true"
 						:uploadFileUrl="uploadFileUrl"
-						:heaer="header"
+						:heaer="reqHeader"
 						@add="getFileInfo"
 						:srvInfo="formData"
 						:showProcess="true"
 						:attachmentList.sync="attachmentList"
 					></attachment>
+					<!-- #endif -->
+					<!-- #ifdef MP-WEIXIN -->
+					<easy-upload
+						:dataList="videoList"
+						:header="reqHeader"
+						:uploadUrl="uploadFileUrl"
+						types="video"
+						:srvInfo="formData"
+						:uploadCount="3"
+						@successVideo="successvideo"
+					></easy-upload>
+					<!-- #endif -->
 				</view>
 				<textarea
 					style="min-height: 60px;width: 100%;"
@@ -147,10 +166,6 @@
 					name="input"
 					:disabled="true"
 				/>
-				<picker class="pickers" @change="PickerChange($event, fieldData)" :value="index" :range="picker" v-if="fieldData.type === 'poupchange'">
-					<!-- <view class="picker">{{ index > -1 ? picker[index] : '请选择' }}</view> -->
-					<input type="text" :placeholder="'点击编辑' + fieldData.label" :value="picker[index]" :class="!valid.valid ? 'valid_error' : ''" name="input" :disabled="true" />
-				</picker>
 				<!--  <bx-editor
           :field="fieldData"
           v-if="(fieldData.type === 'snote' || fieldData.type === 'Note') && !fieldData.disabled"
@@ -249,13 +264,7 @@
 					<input :placeholder="'点击选择' + fieldData.label" :value="treeSelectorShowValue" disabled :class="!valid.valid ? 'valid_error' : ''" name="input" />
 				</view>
 				<view v-else-if="fieldData.type === 'cascader'" @click="openCascader">
-					<input
-						:placeholder="'点击选择' + fieldData.label"
-						:value = "fieldData.showText"
-						disabled
-						:class="!valid.valid ? 'valid_error' : ''"
-						name="input"
-					/>
+					<input :placeholder="'点击选择' + fieldData.label" :value="fieldData.showText" disabled :class="!valid.valid ? 'valid_error' : ''" name="input" />
 				</view>
 				<view class="item-group flex align-center" style="" v-else-if="fieldData.type === 'input'">
 					<input
@@ -432,7 +441,8 @@ export default {
 			treeSelectorShowValue: '', //属性选择器input框中显示的值
 			calcRule: {
 				//计算规则
-			}
+			},
+			videoList: []
 		};
 	},
 	updated() {},
@@ -495,12 +505,8 @@ export default {
 			return datas;
 		}
 	},
-	updated() {},
 	mounted() {
 		console.log('procDataprocDataprocData', this.procData);
-		if (this.fieldData.type === 'poupchange') {
-			this.getpoupInfo(this.fieldData.option_list_v2);
-		}
 		if (this.field.condition && Array.isArray(this.field.condition)) {
 			// this.field.condition.forEach()
 		}
@@ -518,7 +524,11 @@ export default {
 		}
 		console.log('this.fieldData', this.fieldData);
 	},
+	onShow() {
+		console.log('-------------onshow-------------');
+	},
 	created() {
+		console.log('-------------created-------------');
 		if (this.field.value === null) {
 			this.field.value = '';
 		}
@@ -526,7 +536,7 @@ export default {
 		this.reqHeader = {
 			bx_auth_ticket: uni.getStorageSync('bx_auth_ticket')
 		};
-		if (this.fieldData.type === 'images') {
+		if (this.fieldData.type === 'images' || this.fieldData.type === 'file ' || this.fieldData.type === 'video') {
 			(this.formData = {
 				serviceName: 'srv_bxfile_service',
 				interfaceName: 'add',
@@ -542,23 +552,10 @@ export default {
 			}
 		}
 		if (this.fieldData.type === 'cascader') {
-			this.formData['serviceName'] = this.fieldData.srvInfo.serviceName;
-			this.formData['app_no'] = this.fieldData.srvInfo.appNo;
-			let cond = [
-				{
-					colName:this.fieldData.srvInfo.refed_col,
-					ruleType:"eq",
-					value:this.fieldData.value
-				}
-			]
-			if(this.fieldData.value){
-				this.getCascaderText(cond)
-			}
-			// this.fieldData.value = val[this.fieldData.srvInfo.refed_col];
-			// this.fieldData.showText = val[this.fieldData.srvInfo.key_disp_col];
+			this.getCascaderText();
 		}
 		if (this.fieldData.type === 'treeSelector') {
-			// this.getTreeSelectorData();
+			this.getTreeSelectorData();
 		}
 		if (this.fieldData.type === 'list') {
 			if (this.fieldData.options && this.fieldData.options.length > 0) {
@@ -572,76 +569,10 @@ export default {
 			}
 		}
 		this.getDefVal();
-		// console.log(this.fieldData.label + this.pageFormType + this.fieldData.value);
 	},
-
-	// onShow() {
-	// 	this.fieldData = this.field;
-	// 	this.getDefVal()
-	// },
 	methods: {
-		async getpoupInfo(info) {
-			let serviceName = info.serviceName;
-			let req = { serviceName: serviceName, colNames: ['*'], condition: [] };
-			let res = await this.onRequest('select', serviceName, req, info.srv_app);
-			if (res.data.state === 'SUCCESS') {
-				this.oriPicker = res.data.data;
-				let resData = [];
-				res.data.data.forEach(item => {
-					resData.push(item.name);
-				});
-				this.picker = resData;
-				// this.procBasicConfig = res.data;
-				console.log('--------------', res.data.data);
-			}
-			console.log('获取选择楼房');
-		},
-		async getChangePoupInfo(info) {
-			//
-			let serviceName = info.option_list_v2.serviceName;
-			let value = '';
-			let condition = [];
-			let isOk = false;
-			if (info.column === 'dybm') {
-				// value = info.poupValue
-				condition = [
-					{
-						colName: info.option_list_v2.conditions[0].colName,
-						ruleType: 'eq',
-						value: info.poupValue
-					}
-				];
-				isOk = true;
-			} else if (info.column === 'fwbm' && info.louValue && info.dyValue) {
-				condition = [
-					{
-						colName: 'lybm',
-						ruleType: 'eq',
-						value: info.louValue
-					},
-					{
-						colName: 'dybm',
-						ruleType: 'eq',
-						value: info.dyValue
-					}
-				];
-				isOk = true;
-			}
-			let req = { serviceName: serviceName, colNames: ['*'], condition: condition };
-			if (isOk) {
-				let res = await this.onRequest('select', serviceName, req, info.srv_app);
-				if (res.data.state === 'SUCCESS') {
-					this.oriPicker = res.data.data;
-					let resData = [];
-					res.data.data.forEach(item => {
-						resData.push(item.name);
-					});
-					this.picker = resData;
-					this.procBasicConfig = res.data;
-					console.log('--------------', res.data.data);
-				}
-				console.log('获取选择楼房');
-			}
+		successvideo(e) {
+			console.log(e);
 		},
 		editorValueChange(name, e) {
 			this.fieldData.value = e.value;
@@ -736,9 +667,6 @@ export default {
 					if (res.data.state === 'SUCCESS') {
 						self.optionsDatasRun[index]['type'] = 'update';
 						self.optionsDatasRun[index]['model'] = res.data.response[0].response.effect_data[0];
-						// if (!self.optionsDatas[index]) {
-						//   self.optionsDatas.push(self.deepClone(self.optionsDatasRun[index]));
-						// }
 						this.$set(this.optionsDatas[index], 'valueChanged', false);
 						uni.showToast({
 							title: res.data.resultMessage
@@ -798,9 +726,11 @@ export default {
 			}
 		},
 		toPage(e) {
-			uni.redirectTo({
-				url: this.fieldData.settings.eventTarget + '&fromService=' + this.service + '&fieldMapping=' + JSON.stringify(this.fieldData.settings.columnTemp)
-			});
+			let url = this.fieldData.settings.eventTarget + '&fromService=' + this.service + '&fieldMapping=' + JSON.stringify(this.fieldData.settings.columnTemp)
+			this.$emit('toPage',url)
+			// uni.navigateTo({
+			// 	url: this.fieldData.settings.eventTarget + '&fromService=' + this.service + '&fieldMapping=' + JSON.stringify(this.fieldData.settings.columnTemp)
+			// });
 		},
 		getImageInfo(e) {
 			let res = JSON.parse(e.allImages[0]);
@@ -1016,10 +946,22 @@ export default {
 		onTreeGridChange(e) {
 			console.log('onTreeGridChange', e);
 		},
-		async getCascaderText(cond, serv){
+		async getCascaderText() {
+			this.formData['serviceName'] = this.fieldData.srvInfo.serviceName;
+			this.formData['app_no'] = this.fieldData.srvInfo.appNo;
+			let cond = [
+				{
+					colName: this.fieldData.srvInfo.refed_col,
+					ruleType: 'eq',
+					value: this.fieldData.value
+				}
+			];
+			if (!this.fieldData.value) {
+				return;
+			}
 			let self = this;
 			let req = {
-				serviceName: serv ? serv : self.fieldData.option_list_v2 ? self.fieldData.option_list_v2.serviceName : '',
+				serviceName: self.fieldData.option_list_v2 ? self.fieldData.option_list_v2.serviceName : '',
 				colNames: ['*']
 			};
 			if (cond) {
@@ -1036,8 +978,9 @@ export default {
 				appName = uni.getStorageSync('activeApp');
 			}
 			let res = await self.onRequest('select', req.serviceName, req, appName);
-			if(res.data.state=="SUCCESS"&&res.data.data.length>0){
-				self.fieldData.showText =  res.data.data[0][self.fieldData.srvInfo.key_disp_col];
+			if (res.data.state == 'SUCCESS' && res.data.data.length > 0) {
+				self.fieldData.showText = res.data.data[0][self.fieldData.srvInfo.key_disp_col];
+				self.fieldData.colData = res.data.data[0];
 			}
 		},
 		async getTreeSelectorData(cond, serv) {

@@ -85,12 +85,16 @@ export default {
 				car_no: ''
 			},
 			fromService: '',
+			fieldData:{},
 			fieldMapping: {}
 		};
 	},
 	onLoad(option) {
 		if (option.fromService) {
 			this.fromService = option.fromService;
+		}
+		if(option.fieldData){
+			this.fieldData = option.fieldData
 		}
 		if (option.fieldMapping) {
 			try {
@@ -125,9 +129,12 @@ export default {
 			// 	});
 			// } else {
 			console.log('formData-takephotos', formData);
-			uni.redirectTo({
-				url: '/pages/formPage/formPage?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&type=add&serviceName=' + this.fromService
-			});
+			uni.navigateTo({
+				url: '/pages/formPage/formPage?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&type=add&serviceName=' + this.fromService+'&fieldData='+this.fieldData
+			})
+			// uni.redirectTo({
+			// 	url: '/pages/formPage/formPage?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&type=add&serviceName=' + this.fromService
+			// });
 			// }
 		},
 		getPreviewPic() {

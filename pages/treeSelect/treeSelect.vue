@@ -128,23 +128,6 @@ export default {
 				// },2000)
 			}
 		},
-		itemClick(e) {
-			console.log(e);
-			//如果不启用内置的点击选中效果，可以用下面的代码自己赋值selected
-			// let id = e.id
-			// let isHas = false
-			// for(var i = 0; i < this.selected.length; i++){
-			// 	if(this.selected[i] == id)
-			// 	{
-			// 		isHas = true
-			// 		this.selected.splice(i,1)
-			// 	}
-			// }
-			// if(!isHas){
-			// 	this.selected.push(id)
-			// }
-			// console.log(this.selected)
-		},
 		async getTreeRegionData() {
 			let urls = this.getServiceUrl('config', 'srvconfig_area_adj_select', 'select');
 			let reqs = {
@@ -175,49 +158,31 @@ export default {
 			if (res.data.state === 'SUCCESS') {
 				let data = res.data.data;
 				let listData = [];
-				let count_no = await this.getTreeDataCount();
-				let totalNum = 0;
-				count_no.forEach(item => {
-					totalNum += item.id;
-					for (let i = 0; i < data.length; i++) {
-						let nums = data[i];
-						if (item.area_id === nums.path_name) {
-							this.$set(nums, 'num', 0);
-							nums.num = 0;
-							if (item) {
-								if (nums.no == '610800000000') {
-									nums.children = [];
-									listData.push(nums);
-									item.id = totalNum;
-								} else {
-									if (nums.is_leaf == '否') {
-										nums.children = [];
-									}
-									listData[0].children.push(nums);
-								}
-								this.$set(nums, 'num', item.id);
-							}
-							console.log('count_num', item);
-						}
-						return
-						if (nums.no == '610800000000') {
-							nums.children = [];
-							this.$set(nums, 'num', totalNum);
-							listData.push(nums);
-						} else {
-							if (nums.is_leaf == '否') {
-								nums.children = [];
-							}
-							listData[0].children.push(nums);
-						}
-						// let count_no = await this.getTreeDataCount(nums)
-					}
-				});
-				debugger;
-				return
+				
+				// let count_no = await this.getTreeDataCount();
+				// let totalNum = 0;
+				
+				// data.forEach(all=>{
+				// 	 totalNum = 0;
+				// 	for(let a = 0; a < count_no.length; a++){
+				// 		totalNum += count_no.id;						
+				// 		if(all.path_name === count_no[a].area_id){
+				// 			this.$set(all,'num',count_no[a].id)
+				// 		}
+				// 	}
+				// 	if(all.no === '610800000000'){
+				// 		all.children = []
+				// 		this.$set(all,'num',totalNum)
+				// 		listData.push(all)						
+				// 	} else if(all.is_leaf == '否'){
+				// 		all.children = [];
+				// 		listData[0].children.push(all);
+				// 	}
+				// })
+								
 				for (let i = 0; i < data.length; i++) {
 					let nums = data[i];
-					// let count_no = await this.getTreeDataCount(nums)
+					let count_no = await this.getTreeDataCount(nums)
 					this.$set(nums, 'num', 0);
 					nums.num = 0;
 					if (count_no) {
@@ -239,6 +204,7 @@ export default {
 				console.log('res.data', listData);
 				this.ready = true;
 				this.treeData = listData;
+			
 			}
 		},
 		async getTreeDataCount(area) {
@@ -246,16 +212,16 @@ export default {
 			let reqs = {
 				serviceName: 'srvdaq_tkry_people_select',
 				colNames: ['*'],
-				// condition: [{
-				// 	colName:"area_id",
-				// 	ruleType:"like",
-				// 	value:area.path_name
-				// }],
+				condition: [{
+					colName:"area_id",
+					ruleType:"like",
+					value:area.path_name
+				}],
 				group: [
-					{
-						colName: 'area_id',
-						type: 'by'
-					},
+					// {
+					// 	colName: 'area_id',
+					// 	type: 'by'
+					// },
 					{
 						colName: 'id',
 						type: 'count'
@@ -264,8 +230,8 @@ export default {
 			};
 			let res = await this.$http.post(urls, reqs);
 			if (res.data.state === 'SUCCESS') {
-				let num = res.data.data;
-				// let num = res.data.data[0]
+				// let num = res.data.data;
+				let num = res.data.data[0]
 				return num;
 			}
 		},

@@ -100,7 +100,7 @@ export default {
 								if (res.confirm) {
 									self.judgeClientEnviroment();
 									uni.navigateTo({
-										url: '/pages/public/accountExec/accountExec'
+										url: '/pages/accountExec/accountExec'
 									});
 								} else {
 									uni.setStorageSync('hasToAuthPage', false);

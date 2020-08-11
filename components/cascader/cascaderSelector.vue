@@ -11,10 +11,11 @@
 			:topVal="topVal"
 			:isShowMore="isShowMore"
 			:lineDataDefault="lineDataDefault"
+			:showtagbox="showtagbox"
 		></cascader>
 		<view class="button-box">
-			<button type="primary" @click="emitSelectVal">{{ lineDataDefault[lineDataDefault.length - 1] ? '确 定' : '取 消' }}</button>
-			<button type="primary" @click="resetData">重 置</button>
+			<button class="cu-btn bg-blue" @click="emitSelectVal">{{ lineDataDefault[lineDataDefault.length - 1] ? '确 定' : '取 消' }}</button>
+			<button class="cu-btn bg-blue" @click="resetData">重 置</button>
 		</view>
 	</view>
 </template>
@@ -34,33 +35,26 @@ export default {
 			showSelect: true,
 			isShowMore: false, //是否显示‘更多’按钮
 			outputData: {},
-			lineDataDefault: [] //线数据默认值
+			lineDataDefault: [], //线数据默认值
+			showtagbox: true
 		};
 	},
 	methods: {
 		resetData() {
 			console.log('this.lineDataDefault', this.lineDataDefault);
-			// this.lineDataDefault = []
-			// this.areaList = []
-			// this.getAreaData()
 			this.clickLine();
-			// if (this.defaultLineVal) {
-			// 	this.setLineData();
-			// 	this.$emit('getCascaderValue', this.lineDataDefault[this.lineDataDefault.length-1]);
-			// } else {
-			// 	this.clickLine();
-			// }
 		},
 		showMore() {
 			// 点击了‘更多’按钮
 			this.page.pageNo++;
 			let condition = [];
-			if (this.parent_no) {
+			debugger;
+			if (this.parent_no || this.defaultLineVal) {
 				condition = [
 					{
 						colName: 'parent_no',
 						ruleType: 'eq',
-						value: this.parent_no
+						value: this.parent_no ? this.parent_no : this.defaultLineVal
 					}
 				];
 			} else if (this.srvInfo.isTree === false) {
@@ -73,7 +67,6 @@ export default {
 					}
 				];
 			}
-
 			this.getAreaData(condition, true);
 		},
 		async getAreaData(cond, ismore, defaultVal, index, lastListIndex) {
@@ -154,20 +147,12 @@ export default {
 			if (e.no) {
 				this.outputData = e;
 				this.$emit('clickTag', e);
-				// this.page = { total: 0, pageNo: 1, rownumber: 50 };
-
-				// if(e.path.split('/').length>5){
-				//          this.areaList = []
-				//          this.showSelect = false
-				//          return}
 				if (this.srvInfo.isTree === false) {
 					this.$emit('getCascaderValue', this.lineDataDefault[this.lineDataDefault.length - 1], 'sure');
 					this.areaList = [];
 					this.showSelect = false;
-
 					return;
 				}
-
 				this.page.pageNo = 1;
 				let condition = [
 					{
@@ -176,11 +161,9 @@ export default {
 						value: e.no
 					}
 				];
-				// this.lineDataDefault.push(e);
 				let lineDataDefault = [...this.lineDataDefault, e];
-				this.lineDataDefault = lineDataDefault;
+				this.lineDataDefault = this.deepClone(lineDataDefault);
 				this.parent_no = e.no;
-				console.log('parent_no', e);
 				if (e.is_leaf === '是') {
 					this.showSelect = false;
 				} else {
@@ -195,7 +178,6 @@ export default {
 			if (index < this.lineDataDefault.length - 1) {
 				this.lineDataDefault = this.lineDataDefault.slice(0, index + 1);
 			}
-
 			if (e && e.no) {
 				this.outputData = e;
 				this.$emit('clickLine', e);
@@ -232,50 +214,50 @@ export default {
 		},
 		emitSelectVal() {
 			this.$emit('getCascaderValue', this.lineDataDefault[this.lineDataDefault.length - 1], 'sure');
-			// this.$emit('getCascaderValue', this.outputData);
 		},
-		setLineData() {
+		async setLineData() {
 			const value = this.defaultLineVal;
 			if (value) {
+				this.showtagbox = false;
 				this.lineDataDefault = [];
 				let condition = [
 					{
-						colName: 'path_name',
+						colName: this.srvInfo.refed_col ? this.srvInfo.refed_col : 'path_name',
 						ruleType: 'eq',
 						value: value
 					}
 				];
-				//通过path_name查询path
-				this.getAreaData(condition, false, true).then(data => {
-					if (data) {
-						console.log('lineDataDefault', data);
-						let path_no = data[0].path;
-						let arr = path_no.split('/');
-						// 将path分割为地区编号的数组
-						arr = arr.filter(item => item && item.trim());
-						arr.forEach((pathNo, index) => {
-							condition = [
-								{
-									colName: 'no',
-									ruleType: 'eq',
-									value: pathNo
-								}
-							];
-							const lastListIndex = arr.length - 1;
-							this.getAreaData(condition, false, true, index, lastListIndex).then(datas => {
-								let parent_no = datas[datas.length - 1].parent_no;
-								condition = [
-									{
-										colName: 'parent_no',
-										ruleType: 'eq',
-										value: pathNo
-									}
-								];
-								this.getAreaData(condition);
-							});
-						});
+				//通过moreConfig中定义的refed_col查询path
+				let data = await this.getAreaData(condition, false, true);
+				if (data) {
+					console.log('lineDataDefault', data);
+					let path_no = data[0].path;
+					let arr = path_no.split('/');
+					// 将path分割为地区编号的数组
+					arr = arr.filter(item => item && item.trim());
+					for (let index = 0; index < arr.length; index++) {
+						let pathNo = arr[index];
+						condition = [
+							{
+								colName: 'no',
+								ruleType: 'eq',
+								value: pathNo
+							}
+						];
+						const lastListIndex = arr.length - 1;
+						let datas = await this.getAreaData(condition, false, true, index, lastListIndex);
+						let parent_no = datas[datas.length - 1].parent_no;
+						condition = [
+							{
+								colName: 'parent_no',
+								ruleType: 'eq',
+								value: pathNo
+							}
+						];
+						await this.getAreaData(condition);
 					}
-				});
+				}
+				this.showtagbox = true;
 			}
 		}
 	},
@@ -304,13 +286,13 @@ export default {
 			}
 			this.getAreaData(condition);
 		}
-		// if(this.defaultLineVal){
-		// 	this.setLineData()
-		// }
 	},
 	watch: {
-		defaultLineVal(newValue, oldValue) {
-			this.setLineData();
+		defaultLineVal: {
+			immediate: true,
+			handler(newValue, oldValue) {
+				this.setLineData();
+			}
 		}
 	},
 	props: {
@@ -343,19 +325,26 @@ export default {
 .cascader {
 	width: 100%;
 	background-color: #fff;
-	min-height: 900upx;
+	min-height: 1000rpx;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 	z-index: 99999;
 	overflow: scroll;
+	position: relative;
+	height: 100%;
 	.button-box {
 		width: 100%;
-		padding-bottom: 40upx;
+		padding: 20rpx;
 		display: flex;
-		justify-content: center;
+		justify-content: space-around;
+		position: absolute;
+		bottom: 40upx;
 		button {
-			width: 30%;
+			flex: 1;
+			&:first-child {
+				margin-right: 20rpx;
+			}
 		}
 	}
 }

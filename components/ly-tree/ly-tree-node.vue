@@ -1,4 +1,5 @@
 <template>
+		
 	<view class="ly-tree-node" @click.stop="handleClick" v-show="node.visible" :class="{ 'is-expanded': expanded, 
 			'is-hidden': !node.visible, 
 			'is-checked': !node.disabled && node.checked }"
@@ -21,7 +22,7 @@
 			</template>
 			
 			<text @click="test" class="ly-tree-node__label">{{node.label}}</text>
-			<text > ({{node.data.num}})</text>
+			<text class="rigth_num" > ({{node.data.num}})</text>
 		</view>
 		
 		<view v-if="!renderAfterExpand || childNodeRendered" v-show="expanded" class="ly-tree-node__children" role="group">
@@ -49,7 +50,7 @@
 		componentName: 'LyTreeNode',
 		
 		components: {
-			lyCheckbox
+			lyCheckbox,
 		},
 		
 		props: {
@@ -384,6 +385,9 @@
 	
 	.ly-icon-loading:before {
 		content: "\e657";
+	}
+	.rigth_num {
+		margin-left: 20upx;
 	}
 	/* iconfont-end */
 	

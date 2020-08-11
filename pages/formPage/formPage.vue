@@ -12,6 +12,7 @@
 					v-if="fields.length > 0"
 					@onreset="resetForm"
 					@changeFieldModel="changeFieldModel"
+					@toPage='toPage'
 					:moreConfig="colsV2Data && colsV2Data.more_config ? colsV2Data.more_config : null"
 				></bxform>
 				<bxButtons :buttons="buttons" @on-button-change="onButton($event)" v-if="buttons && buttons.length > 0 && formDisabled != true"></bxButtons>
@@ -183,6 +184,14 @@ export default {
 				cond = query.condition;
 			}
 		}
+		// if (option.fieldData) {
+		// 	try {
+		// 		this.defaultVal = JSON.parse(decodeURIComponent(option.fieldData));
+		// 	} catch (e) {
+		// 		//TODO handle the exception
+		// 		console.warn(e)
+		// 	}
+		// }
 		if (option.hasOwnProperty('loadedType')) {
 			this.loadedType = option.loadedType;
 		} else if (option.hasOwnProperty('params')) {
@@ -306,6 +315,15 @@ export default {
 					url: '/pages/list/list?serviceName=' + e.service_name + '&cond=' + JSON.stringify(condition)
 				});
 			}
+		},
+		toPage(e){
+			console.log(e)
+			if(this.params){
+				e += "&params="+JSON.stringify(this.params )
+			}
+			uni.redirectTo({
+				url:e
+			})
 		},
 		changeFieldModel(e) {
 			if (e) {

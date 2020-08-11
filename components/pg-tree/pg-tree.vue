@@ -297,7 +297,6 @@
 			switchChild2(item,index){ //切换子级显示不保留折叠信息
 				let list = this.listData
 				let id = item.id
-				debugger
 				item.showChild = !item.showChild
 				list.forEach(iitem=>{
 					if(item.showChild === false){

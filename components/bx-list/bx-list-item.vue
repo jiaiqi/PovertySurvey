@@ -94,8 +94,8 @@
 					<text v-if="listData.subtitle.label">{{ listData.subtitle.label }}:</text>
 					{{ listData.subtitle.value ? listData.subtitle.value : '' }}
 				</view>
-				<view class="context " v-if="listData.content" @click="listItemClick">
-					<view class="content content-item">
+				<view class="context " @click="listItemClick">
+					<view class="content content-item"  v-if="listData.content">
 						<text v-if="listData.content.label">{{ listData.content.label }}:</text>
 						{{ listData.content.value ? listData.content.value : '' }}
 					</view>
@@ -386,7 +386,7 @@ export default {
 										label: col.label,
 										value: self.itemData[col.columns]
 									};
-									self.listData[key] = obj;
+									// self.listData[key] = obj;
 									self.$set(self.listData, key, obj);
 								}
 							});
@@ -441,22 +441,22 @@ export default {
 			immediate: true,
 			handler(newValue, oldValue) {
 				let self = this;
-				// let srvCols = this.deepClone(this.srv_cols);
-				// let listTemp = this.listTemp;
-				// if (srvCols && Array.isArray(srvCols && srvCols.length > 0)) {
-				// 	srvCols.forEach(col => {
-				// 		Object.keys(listTemp).forEach(key => {
-				// 			if (col.columns === listTemp[key]) {
-				// 				let obj = {
-				// 					label: col.label,
-				// 					value: newValue[col.columns]
-				// 				};
-				// 				this.listData[key] = obj;
-				// 				this.$set(this.listData, key, obj);
-				// 			}
-				// 		});
-				// 	});
-				// }
+				let srvCols = this.deepClone(this.srv_cols);
+				let listTemp = this.listTemp;
+				if (srvCols && Array.isArray(srvCols) && srvCols.length > 0) {
+					srvCols.forEach(col => {
+						Object.keys(listTemp).forEach(key => {
+							if (col.columns === listTemp[key]) {
+								let obj = {
+									label: col.label,
+									value: newValue[col.columns]
+								};
+								this.listData[key] = obj;
+								this.$set(this.listData, key, obj);
+							}
+						});
+					});
+				}
 				if (newValue[this.viewTemp.img]) {
 					this.getPicture(newValue[this.viewTemp.img]).then(url => {
 						this.goodsData.img = url;

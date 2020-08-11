@@ -24,6 +24,7 @@
 				@on-form-item="onItemButtons($event)"
 				@on-value-change="onValChange($event)"
 				@on-value-blur="onValBlur($event)"
+				@toPage = "toPage"
 				@get-cascader-val="getCascaderVal"
 				@picker-change="pickerchange"
 				@getRedundantData="getRedundantData"
@@ -275,6 +276,9 @@ export default {
 			const self = this;
 			this.$emit('changeFieldModel', this.fieldModel);
 			this.$emit('value-blur', e);
+		},
+		toPage(e){
+			this.$emit('toPage',e)
 		},
 		getDetailfieldModel() {
 			return this.fieldModel;

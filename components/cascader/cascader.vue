@@ -14,18 +14,18 @@
 						'line-end': lineDataDefault.length - 1 === index && !showSelect
 					}"
 				>
-					<view class="content tag-item">{{ item.name?item.name:showCol?item[showCol]:"" }}</view>
+					<view class="content tag-item">{{ item.name ? item.name : showCol ? item[showCol] : '' }}</view>
 				</view>
 				<view class="bx-item bx-text-yellow line-end" v-if="showSelect || (lineData.length === 0 && areaList.length > 0)">请选择</view>
 			</view>
-			  <view class="bx-tagbox" v-if="showSelect">
-          <scroll-view scroll-y="true" >
-			  	<view class="bx-item  bx-text-white bx-bg-blue radius" @click="selectArea(item)" v-for="(item, index) in areaList" :key="index">
-			  		<view class="content">{{ item.name?item.name:showCol?item[showCol]:"" }}</view>
-			  	</view>
-			  	<view class="bx-item  bx-text-white bx-bg-yellow radius" @click="showMore" v-if="isShowMore"><view class="content">更多</view></view>
-          </scroll-view>
-			  </view>
+			<view class="bx-tagbox" v-if="showSelect&&showtagbox">
+				<scroll-view scroll-y="true" class="scroll-view">
+					<view class="bx-item  bx-text-white bx-bg-blue radius" @click="selectArea(item)" v-for="(item, index) in areaList" :key="index">
+						<view class="content">{{ item.name ? item.name : showCol ? item[showCol] : '' }}</view>
+					</view>
+					<view class="bx-item  bx-text-white bx-bg-yellow radius" @click="showMore" v-if="isShowMore"><view class="content">更多</view></view>
+				</scroll-view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -50,21 +50,14 @@ export default {
 			this.lineData.push(item);
 		},
 		lineClick(item, index) {
-			// if (index < this.lineData.length - 1) {
-			// 	this.lineData = this.lineData.slice(0, index + 1);
-			// }
-			// if (!item) {
-			// 	this.lineData = [];
-			// }
 			this.$emit('line-click', item, index);
 		}
 	},
-	created() {},
+
 	watch: {
 		lineDataDefault: {
 			deep: true,
 			handler: function(newV, oldV) {
-				console.log('lineDataDefaultwatch中：', newV);
 				this.lineData = newV;
 			}
 		},
@@ -73,15 +66,11 @@ export default {
 			handler: function(newV, oldV) {
 				this.areaList = newV;
 				this.lineData = this.lineDataDefault;
-				// console.log('areaListwatch中：', newV, thi.lineData);
 			}
 		}
 	},
 	mounted() {
-		// console.log('lineDataDefault', this.lineDataDefault);
-		// if (this.lineDataDefault && lineDataDefault.length > 0) {
 		this.lineData = this.lineDataDefault;
-		// }
 	},
 	props: {
 		// 是否显示‘请选择’提示
@@ -94,14 +83,16 @@ export default {
 			type: String,
 			default: '中国'
 		},
-    column:{ //要提交的字段
-      type: String,
-      default: ''
-    },
-    showCol:{//要显示的字段
-      type: String,
-      default: ''
-    },
+		column: {
+			//要提交的字段
+			type: String,
+			default: ''
+		},
+		showCol: {
+			//要显示的字段
+			type: String,
+			default: ''
+		},
 		areaList: {
 			//区域数据
 			type: Array,
@@ -131,6 +122,10 @@ export default {
 		tagBackground: {
 			type: String,
 			default: 'yellow'
+		},
+		showtagbox: {
+			type: Boolean,
+			default: true
 		}
 	}
 };
@@ -178,7 +173,6 @@ export default {
 				line-height: 50rpx;
 				top: 36rpx;
 				font-size: 36rpx;
-
 			}
 			.delete-button {
 				font-size: 40upx;
@@ -205,11 +199,13 @@ export default {
 		display: flex;
 		flex-wrap: wrap;
 		align-items: flex-start;
-		min-height: 200upx;
+		max-height: 400upx;
 		width: 90%;
-    max-height: 80vh;
-    overflow-y: scroll;
+		overflow-y: scroll;
 		margin: 0 auto;
+		.scroll-view {
+			height: 400upx;
+		}
 		.bx-item {
 			min-width: 100upx;
 			// height: 40upx;

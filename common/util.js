@@ -275,7 +275,7 @@ export default {
 				} else if (item.col_type === "Image") {
 					// } else if (item.col_type === "Image" || item.col_type === "FileList") {
 					fieldInfo.type = "images"
-					if (item.columns === "identity_image"||item.columns === "id_card_photo") {
+					if (item.columns === "identity_image" || item.columns === "id_card_photo") {
 						if (item.more_config) {
 							try {
 								let settings = JSON.parse(item.more_config)
@@ -327,7 +327,6 @@ export default {
 							}
 						}
 					}
-					// fieldInfo.type = "poupchange"
 				} else if (item.col_type === "User") {
 					fieldInfo.type = "treeSelector"
 					fieldInfo.option_list_v2 = {
@@ -349,7 +348,6 @@ export default {
 				if (item.more_config) {
 					let config = JSON.parse(item.more_config)
 					if (config.dataType === 'area-tree') {
-
 						fieldInfo.type = "cascader"
 						fieldInfo.srvInfo = {
 							serviceName: 'srvconfig_area_adj_select',
@@ -1050,7 +1048,8 @@ export default {
 					let response = await this.$http.post(url, req);
 					console.log('setWxUserInfo', response);
 					if (response.data.state === 'SUCCESS' && response.data.data && response.data.data.length > 0) {
-						Vue.prototype.throttle(Vue.prototype.wxLogin(), 3000)
+						Vue.prototype.wxLogin()
+						// Vue.prototype.throttle(Vue.prototype.wxLogin(), 3000)
 						return response.data.data
 					}
 				}
@@ -1137,12 +1136,6 @@ export default {
 		}
 		Vue.prototype.isArray = function(e) {
 			return Array.isArray(e)
-			// if (e) {
-			//   // return Array.isArray(e)
-			//   return Object.prototype.toString.call(e) === "[object Array]"
-			// } else {
-			//   return false
-			// }
 		}
 		Vue.prototype.setCodeUrl = function(obj) {
 			if (obj) {
@@ -1156,22 +1149,67 @@ export default {
 				return false
 			}
 		}
-		Vue.prototype.setFieldsDefaultVal = function(field, values) {
-			if (Vue.prototype.isArray(field) && Vue.prototype.iObject(values)) {
-				for (let i = 0; i < field.length; i++) {
-					for (let key in values) {
-						if (field[i].column === key) {
-							field[i].value = values[key]
-							field[i].defaultValue = values[key]
-						}
+		Vue.prototype.getCascaderText = async function(fieldData) {
+				let cond = [{
+					colName: fieldData.srvInfo.refed_col,
+					ruleType: 'eq',
+					value: fieldData.value
+				}];
+				if (!fieldData.value) {
+					return;
+				}
+				let self = this;
+				let req = {
+					serviceName: fieldData.option_list_v2 ? fieldData.option_list_v2.serviceName : '',
+					colNames: ['*']
+				};
+				if (cond) {
+					req.condition = cond;
+				}
+				let option_list_v2 = fieldData.option_list_v2;
+				if (option_list_v2.is_tree === true) {
+					req['treeData'] = true;
+				}
+				let appName = '';
+				if (fieldData.option_list_v2 && fieldData.option_list_v2.srv_app) {
+					appName = fieldData.option_list_v2.srv_app;
+				} else {
+					appName = uni.getStorageSync('activeApp');
+				}
+				let res = await self.onRequest('select', req.serviceName, req, appName);
+				if (res.data.state == 'SUCCESS' && res.data.data.length > 0) {
+					fieldData.showText = res.data.data[0][fieldData.srvInfo.key_disp_col];
+					fieldData.colData = res.data.data[0];
+					return {
+						colData: fieldData.colData,
+						showText: fieldData.showText
 					}
 				}
-				console.log('1111', field, values)
-				return field
-			} else {
-				return false
+			},
+			Vue.prototype.setFieldsDefaultVal = function(field, values) {
+				if (Vue.prototype.isArray(field) && Vue.prototype.iObject(values)) {
+					for (let i = 0; i < field.length; i++) {
+						for (let key in values) {
+							if (field[i].column === key) {
+								field[i].value = values[key]
+								field[i].defaultValue = values[key]
+								if (field[i].type === 'cascader') {
+									Vue.prototype.getCascaderText(field[i]).then(res => {
+										if (res) {
+											field[i].showText = res.showText
+											field[i].colData = res.colData
+										}
+									})
+								}
+							}
+						}
+					}
+					console.log('1111', field, values)
+					return field
+				} else {
+					return false
+				}
 			}
-		}
 		Vue.prototype.onButtonRequest = function(e) {
 			let btn, row, condition, defaultVal
 			if (e && Vue.prototype.iObject(e) && e.hasOwnProperty("button")) {
@@ -1495,7 +1533,8 @@ export default {
 							console.log('获取用户信息失败失败', errMsg);
 							uni.setStorageSync('isAuth', false)
 							uni.setStorageSync('hasToAuthPage', false)
-							Vue.prototype.throttle(Vue.prototype.wxLogin(), 3000)
+							Vue.prototype.wxLogin()
+							// Vue.prototype.throttle(Vue.prototype.wxLogin(), 3000)
 						}
 					});
 					// #endif
@@ -1510,7 +1549,8 @@ export default {
 						success(res) {
 							if (res.code) {
 								//发起网络请求
-								Vue.prototype.throttle(Vue.prototype.verifyLogin(res.code), 3000)
+								// Vue.prototype.throttle(Vue.prototype.verifyLogin(res.code), 3000)
+								Vue.prototype.verifyLogin(res.code)
 								wx.getSetting({
 									success(res) {
 										let isAuthUserInfo = res.authSetting['scope.userInfo']
@@ -1538,9 +1578,6 @@ export default {
 														uni.setStorageSync('isAuth', false)
 														uni.setStorageSync('hasToAuthPage', false)
 													}
-												},
-												complete() {
-
 												}
 											})
 										} else if (isAuthUserInfo) {
@@ -1579,15 +1616,15 @@ export default {
 							//session_key 未过期，并且在本生命周期一直有效
 							if (uni.getStorageSync('isLogin') === false) {
 								// 虽然session_key 未过期但是在百想后台的登录状态过期了
-								Vue.prototype.throttle(Vue.prototype.wxLogin(backUrl), 3000)
-								// Vue.prototype.wxLogin(backUrl)
+								// Vue.prototype.throttle(Vue.prototype.wxLogin(backUrl), 3000)
+								Vue.prototype.wxLogin(backUrl)
 							}
 						},
 						fail() {
 							// session_key 已经失效，需要重新执行登录流程
 							//重新登录
-							Vue.prototype.throttle(Vue.prototype.wxLogin(backUrl), 3000)
-							// Vue.prototype.wxLogin(backUrl)
+							Vue.prototype.wxLogin(backUrl)
+							// Vue.prototype.throttle(Vue.prototype.wxLogin(backUrl), 3000)
 						}
 					})
 					// #endif
