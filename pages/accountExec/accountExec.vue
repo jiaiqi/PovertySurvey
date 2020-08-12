@@ -38,11 +38,9 @@
 					暂不，继续使用
 				</button>
 				<!-- #endif -->
+				
 				<!-- #ifdef MP-WEIXIN -->
-				<!-- #ifdef MP -->
-				申请获取你的公开信息(昵称、头像等)
-				<!-- <view v-if="client_env === 'wxmp'">点击登录按钮</view> -->
-				<!-- #endif -->
+				<view v-if="client_env === 'wxmp'" style="text-align: center;">申请获取你的公开信息(昵称、头像等)</view>
 				<!-- <button class="confirm-btn bg-blue text-black" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber">获取手机号</button> -->
 				<button class="confirm-btn bg-gray text-green" lang="zh_CN" type="primary" open-type="getUserInfo" @getuserinfo="saveWxUser" :withCredentials="false" :disabled="disabled">
 					微信授权
