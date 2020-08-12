@@ -48,7 +48,6 @@ export default {
 			// 点击了‘更多’按钮
 			this.page.pageNo++;
 			let condition = [];
-			debugger;
 			if (this.parent_no || this.defaultLineVal) {
 				condition = [
 					{

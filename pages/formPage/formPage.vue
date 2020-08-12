@@ -12,7 +12,7 @@
 					v-if="fields.length > 0"
 					@onreset="resetForm"
 					@changeFieldModel="changeFieldModel"
-					@toPage='toPage'
+					@toPage="toPage"
 					:moreConfig="colsV2Data && colsV2Data.more_config ? colsV2Data.more_config : null"
 				></bxform>
 				<bxButtons :buttons="buttons" @on-button-change="onButton($event)" v-if="buttons && buttons.length > 0 && formDisabled != true"></bxButtons>
@@ -23,13 +23,15 @@
 						<view class="child-service" v-for="item in childService" :key="item.service_name">
 							<view
 								class="bg-blue service"
-								v-if="item.foreign_key.section_name && item && item.childData && item.childData.data && Array.isArray(item.childData.data)"
+								v-if="item.foreign_key && item.foreign_key.section_name"
 								:class="{
 									'bg-gray':
 										item.foreign_key &&
 										item.foreign_key.more_config &&
 										item.foreign_key.more_config.statusColor &&
 										item.foreign_key.more_config.statusColor.noStart &&
+										item.childData &&
+										item.childData.data &&
 										item.childData.data &&
 										item.childData.data.length === 0
 								}"
@@ -87,8 +89,20 @@ export default {
 			hasChildService: false, //是否拥有子表
 			showSublist: true, //显示子表
 			formDisabled: false,
-			showItem: false
+			showItem: false,
+			photosData: null
 		};
+	},
+	watch: {
+		defaultVal: {
+			deep: true,
+			handler(newValue, oldValue) {
+				let cond = this.condition.length > 0 ? this.condition : null;
+				if (!this.photosData) {
+					this.getFieldsV2(cond);
+				}
+			}
+		}
 	},
 	computed: {
 		buttons: function() {
@@ -139,15 +153,41 @@ export default {
 		// #endif
 	},
 	onShow() {
+		let self = this;
 		let condition = this.condition;
 		if (this.type === 'detail' || this.type === 'update') {
 			this.getDetailfieldModel().then(res => {
+				if (!this.photosData) {
+					this.defaultVal = res;
+				}
 				if (this.params.formDisabled == true) {
 					this.formDisabled = true;
 				}
-				this.getFieldsV2(condition);
+				uni.$on('sendDefaultVal', e => {
+					Object.keys(e).forEach(key => {
+						self.$set(self.defaultVal, key, e[key]);
+					});
+					this.photosData = e;
+					this.getFieldsV2(condition);
+				});
 			});
 		} else {
+			uni.$on('sendDefaultVal', e => {
+				Object.keys(e).forEach(key => {
+					self.$set(self.defaultVal, key, e[key]);
+				});
+				this.photosData = e;
+			});
+			if (this.params.formDisabled == true) {
+				this.formDisabled = true;
+			}
+			this.condition = this.params.condition;
+			// this.defaultVal = this.params.defaultVal;
+			let cond = [];
+			if (this.params.cond && Array.isArray(this.params.cond)) {
+				cond = this.params.cond;
+				this.condition = cond;
+			}
 			this.getFieldsV2(condition);
 		}
 	},
@@ -184,14 +224,6 @@ export default {
 				cond = query.condition;
 			}
 		}
-		// if (option.fieldData) {
-		// 	try {
-		// 		this.defaultVal = JSON.parse(decodeURIComponent(option.fieldData));
-		// 	} catch (e) {
-		// 		//TODO handle the exception
-		// 		console.warn(e)
-		// 	}
-		// }
 		if (option.hasOwnProperty('loadedType')) {
 			this.loadedType = option.loadedType;
 		} else if (option.hasOwnProperty('params')) {
@@ -201,30 +233,31 @@ export default {
 				this.defaultCondition = this.params.defaultCondition;
 			}
 			if (this.type === 'detail' || this.type === 'update') {
-				this.getDetailfieldModel().then(res => {
-					if (this.params.formDisabled == true) {
-						this.formDisabled = true;
-					}
-					this.condition = this.params.condition;
-					// this.defaultVal = this.params.defaultVal;
-					let cond = [];
-					if (this.params.cond && Array.isArray(this.params.cond)) {
-						cond = this.params.cond;
-					}
-					this.getFieldsV2(cond);
-				});
+				// this.getDetailfieldModel().then(res => {
+				// 	this.defaultVal = res
+				// 	if (this.params.formDisabled == true) {
+				// 		this.formDisabled = true;
+				// 	}
+				// 	this.condition = this.params.condition;
+				// 	// this.defaultVal = this.params.defaultVal;
+				// 	let cond = [];
+				// 	if (this.params.cond && Array.isArray(this.params.cond)) {
+				// 		cond = this.params.cond;
+				// 	}
+				// 	this.getFieldsV2(cond);
+				// });
 			} else {
-				if (this.params.formDisabled == true) {
-					this.formDisabled = true;
-				}
-				this.condition = this.params.condition;
-				// this.defaultVal = this.params.defaultVal;
-				let cond = [];
-				if (this.params.cond && Array.isArray(this.params.cond)) {
-					cond = this.params.cond;
-					this.condition = cond;
-				}
-				this.getFieldsV2(cond);
+				// if (this.params.formDisabled == true) {
+				// 	this.formDisabled = true;
+				// }
+				// this.condition = this.params.condition;
+				// // this.defaultVal = this.params.defaultVal;
+				// let cond = [];
+				// if (this.params.cond && Array.isArray(this.params.cond)) {
+				// 	cond = this.params.cond;
+				// 	this.condition = cond;
+				// }
+				// this.getFieldsV2(cond);
 			}
 		} else if (query.serviceName && query.type) {
 			this.serviceName = query.serviceName;
@@ -316,14 +349,14 @@ export default {
 				});
 			}
 		},
-		toPage(e){
-			console.log(e)
-			if(this.params){
-				e += "&params="+JSON.stringify(this.params )
+		toPage(e) {
+			console.log(e);
+			if (this.params) {
+				e += '&params=' + JSON.stringify(this.params);
 			}
-			uni.redirectTo({
-				url:e
-			})
+			uni.navigateTo({
+				url: e
+			});
 		},
 		changeFieldModel(e) {
 			if (e) {
@@ -450,7 +483,11 @@ export default {
 							});
 						});
 					}
-					this.fields = colVs._fieldInfo;
+					if (Object.values(this.defaultVal).length > 0) {
+						this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.defaultVal);
+					} else {
+						this.fields = colVs._fieldInfo;
+					}
 					break;
 				case 'detail':
 					this.fields = this.setFieldsDefaultVal(colVs._fieldInfo, this.defaultVal);
@@ -472,7 +509,7 @@ export default {
 			};
 			let res = await this.$http.post(url, req);
 			if (res.data.state === 'SUCCESS' && res.data.data.length > 0) {
-				this.defaultVal = res.data.data[0];
+				// this.defaultVal = res.data.data[0];
 				return res.data.data[0];
 			} else {
 				return false;

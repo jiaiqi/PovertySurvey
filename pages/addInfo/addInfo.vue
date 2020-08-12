@@ -234,8 +234,6 @@ export default {
 		async onButton(e) {
 			let req = this.$refs.bxForm.getFieldModel();
 			let self = this;
-			console.log(e, req);
-			debugger
 			switch (e.button_type) {
 				case 'edit':
 					if (e.page_type === '详情') {

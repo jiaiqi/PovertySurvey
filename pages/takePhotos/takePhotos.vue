@@ -1,6 +1,6 @@
 <template>
 	<view class="collect-wrap">
-		<view class="camera-wrap" v-if="showCamera">
+		<view class="camera-wrap" v-if="showCamera && formDataLength > 0">
 			<!-- <view class="collect-title" v-if="!showCamera">照片预览</view> -->
 			<!-- #ifdef APP-PLUS||MP-WEIXIN -->
 			<camera device-position="back" flash="auto" @error="error" style="width:750upx; height: 1115upx">
@@ -33,15 +33,15 @@
 			<form v-if="addType === 'person'">
 				<view class="cu-form-group margin-top">
 					<view class="title">姓名</view>
-					<input placeholder="姓名" name="input" v-model="formData.name" />
+					<input placeholder="姓名" name="input" v-model="formData[fieldMapping.name]" />
 				</view>
 				<view class="cu-form-group margin-top">
 					<view class="title">地址</view>
-					<input placeholder="地址" name="input" v-model="formData.native" />
+					<input placeholder="地址" name="input" v-model="formData[fieldMapping.native]" />
 				</view>
 				<view class="cu-form-group margin-top">
 					<view class="title">身份证号</view>
-					<input placeholder="身份证号" name="input" v-model="formData.idNo" />
+					<input placeholder="身份证号" name="input" v-model="formData[fieldMapping.idNo]" />
 				</view>
 			</form>
 			<button type="primary" @click="toForm">下一步</button>
@@ -76,38 +76,28 @@ export default {
 			picList: [],
 			responseList: [],
 			dept_no: '',
-			formData: {
-				name: '',
-				id_card_addr: '',
-				id_card_no: '',
-				profile_picture: '',
-				car_photo: '',
-				car_no: ''
-			},
+			formData: {},
 			fromService: '',
-			fieldData:{},
+			fieldData: {},
 			fieldMapping: {}
 		};
 	},
+
 	onLoad(option) {
 		if (option.fromService) {
 			this.fromService = option.fromService;
 		}
-		if(option.fieldData){
-			this.fieldData = option.fieldData
+		if (option.fieldData) {
+			this.fieldData = option.fieldData;
 		}
 		if (option.fieldMapping) {
 			try {
 				this.fieldMapping = JSON.parse(option.fieldMapping);
-				this.fieldMapping.cardImg = 'identity_image';
-				this.fieldMapping.avatar = '';
-				// avatar:"",
-				// cardImg:"identity_image"
-				// idNo: "identity_no"
-				// name: "name"
-				// native: "native_place"
 				Object.values(this.fieldMapping).forEach(item => {
-					this.formData[item] = '';
+					if (item) {
+						// this.formData[item] = '';
+						this.$set(this.formData, item, '');
+					}
 				});
 				console.log('this.fieldMapping', this.fieldMapping);
 			} catch (e) {
@@ -120,18 +110,31 @@ export default {
 			this.addType = 'person';
 		}
 	},
+	computed: {
+		formDataLength() {
+			return Object.keys(this.formData).length;
+		}
+	},
 	methods: {
 		toForm() {
-			const formData = this.formData;
-			// if (this.addType === 'car') {
-			// 	uni.redirectTo({
-			// 		url: '../checkInCarInfo/checkInCarInfo?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&dept_no=' + this.dept_no
-			// 	});
-			// } else {
+			const formData = this.deepClone(this.formData);
 			console.log('formData-takephotos', formData);
-			uni.navigateTo({
-				url: '/pages/formPage/formPage?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&type=add&serviceName=' + this.fromService+'&fieldData='+this.fieldData
-			})
+			var pages = getCurrentPages();
+			var currPage = pages[pages.length - 1]; //当前页面
+			var prevPage = pages[pages.length - 2]; //上一个页面
+			console.log(prevPage);
+			console.log(prevPage.$vm.defaultVal);
+			Object.values(this.fieldMapping).forEach(item => {
+				if (item) {
+					prevPage.$vm.defaultVal[item] = formData[item];
+				}
+			});
+			console.log(prevPage.$vm.defaultVal);
+			uni.$emit('sendDefaultVal', formData);
+			uni.navigateBack();
+			// uni.navigateTo({
+			// 	url: '/pages/formPage/formPage?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&type=add&serviceName=' + this.fromService+'&fieldData='+this.fieldData
+			// })
 			// uni.redirectTo({
 			// 	url: '/pages/formPage/formPage?formData=' + encodeURIComponent(JSON.stringify(formData)) + '&type=add&serviceName=' + this.fromService
 			// });

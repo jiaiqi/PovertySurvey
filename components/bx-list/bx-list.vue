@@ -46,6 +46,7 @@
 						:listType="listType"
 						:listConfig="listConfig"
 						@click-list-item="clickItem"
+						@click-list-item-img='clickItemImg'
 						@click-foot-btn="clickFootBtn"
 					></list-item>
 				</view>
@@ -65,6 +66,7 @@
 						:srv_cols="srv_cols"
 						:listType="listType"
 						@click-list-item="clickItem"
+						@click-list-item-img='clickItemImg'
 						@click-foot-btn="clickFootBtn"
 					></list-item>
 				</view>
@@ -339,6 +341,9 @@ export default {
 		},
 		clickItem(data) {
 			this.$emit('click-list-item', data);
+		},
+		clickItemImg(data){
+			this.$emit('click-list-item-img', data);
 		},
 		clickFootBtn(data) {
 			this.$emit('clickFootBtn', data);

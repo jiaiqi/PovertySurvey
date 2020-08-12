@@ -5,26 +5,30 @@
 			'is-checked': !node.disabled && node.checked }"
 	 role="treeitem" name="LyTreeNode" ref="node">
 		<view class="ly-tree-node__content" :class="{'is-current': node.isCurrent && highlightCurrent}" :style="{ 'padding-left': (node.level - 1) * indent + 'px' }">
-			<text @tap.stop="handleExpandIconClick" :class="[{ 'is-leaf': node.data.is_leaf === '是'?true:false, expanded: node.data.is_leaf === '是'?false:true  && node.expanded }, 'ly-tree-node__expand-icon', iconClass ? iconClass : 'ly-iconfont ly-icon-caret-right']"></text>
+				
+				<text @tap.stop="handleExpandIconClick" :class="[{ 'is-leaf': node.data.is_leaf === '是'?true:false, expanded: node.data.is_leaf === '是'?false:true  && node.expanded }, 'ly-tree-node__expand-icon', iconClass ? iconClass : 'ly-iconfont ly-icon-caret-right']"></text>
+				<view class="ly-tree-node__content1">
+					<ly-checkbox v-if="checkboxVisible || radioVisible"
+						:type="checkboxVisible ? 'checkbox' : 'radio'" 
+						:checked="node.checked" 
+						:indeterminate="node.indeterminate" 
+						:disabled="!!node.disabled"
+						@check="handleCheckChange(!node.checked)"/>
+					
+					<text v-if="node.loading" class="ly-tree-node__loading-icon ly-iconfont ly-icon-loading"></text>
+					
+					<template v-if="node.icon && node.icon.length > 0">
+						<image v-if="node.icon.indexOf('/') !== -1" class="ly-tree-node__icon" :src="node.icon" mode="widthFix"></image>
+						<text v-else class="ly-tree-node__icon" :class="node.icon"></text>
+					</template>
+					<view class="">
+						<text @click="test" class="ly-tree-node__label">{{node.label}}</text>
+						<text class="rigth_num" > ({{node.data.num}})</text>
+					</view>
+					<!-- <text>详情</text> -->
+				</view>
 			
-			<ly-checkbox v-if="checkboxVisible || radioVisible"
-				:type="checkboxVisible ? 'checkbox' : 'radio'" 
-				:checked="node.checked" 
-				:indeterminate="node.indeterminate" 
-				:disabled="!!node.disabled"
-				@check="handleCheckChange(!node.checked)"/>
-			
-			<text v-if="node.loading" class="ly-tree-node__loading-icon ly-iconfont ly-icon-loading"></text>
-			
-			<template v-if="node.icon && node.icon.length > 0">
-				<image v-if="node.icon.indexOf('/') !== -1" class="ly-tree-node__icon" :src="node.icon" mode="widthFix"></image>
-				<text v-else class="ly-tree-node__icon" :class="node.icon"></text>
-			</template>
-			
-			<text @click="test" class="ly-tree-node__label">{{node.label}}</text>
-			<text class="rigth_num" > ({{node.data.num}})</text>
 		</view>
-		
 		<view v-if="!renderAfterExpand || childNodeRendered" v-show="expanded" class="ly-tree-node__children" role="group">
 			<ly-tree-node v-for="cNodeId in node.childNodesId" 
 				:nodeId="cNodeId" 
@@ -386,8 +390,11 @@
 	.ly-icon-loading:before {
 		content: "\e657";
 	}
-	.rigth_num {
-		margin-left: 20upx;
+	.ly-tree-node__content1{
+		display: flex;
+		align-items: center;
+		width: 90%;
+		justify-content: space-between;
 	}
 	/* iconfont-end */
 	

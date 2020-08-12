@@ -1,8 +1,9 @@
 <template>
 	<view class="list-item-wrap">
 		<view class="list-item flex" v-if="viewType === 'normal'">
-			<image class="main-image" v-if="listData.img" :src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + listData.img.value" :imgColName="'img'"></image>
+			<image @click='listItemImgClick' class="main-image" v-if="listData.img" :src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + listData.img.value" :imgColName="'img'"></image>
 			<image
+				@click='listItemImgClick'
 				class="main-image"
 				v-if="viewTemp['img']"
 				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + itemData[viewTemp['img']]"
@@ -202,6 +203,9 @@ export default {
 	methods: {
 		listItemClick() {
 			this.$emit('click-list-item', this.deepClone(this.itemData));
+		},
+		listItemImgClick(){
+			this.$emit('click-list-item-img', this.deepClone(this.itemData));
 		},
 		footBtnClick(btn) {
 			this.$emit('click-foot-btn', { button: this.deepClone(btn), row: this.deepClone(this.itemData) });

@@ -146,41 +146,41 @@ export default {
 		async clickMenu(e) {
 			// 菜单按钮点击事件
 			console.log('点击了按钮：', e);
-			let collectorInfo = await this.selectCollectorInfo();
-			if (!collectorInfo) {
-				uni.showModal({
-					title: '提示',
-					content: '当前登录用户未登记信息，是否跳转到信息登记页面',
-					success(res) {
-						if (res.confirm) {
-							uni.navigateTo({
-								url: '/pages/addInfo/addInfo'
-							});
-						}
-					}
-				});
-				return;
-			}
-			if (e.dest_menu_no === '采集统计') {
-				if (collectorInfo.is_admin !== '是') {
-					uni.showToast({
-						title: '没有访问权限',
-						icon: 'none'
-					});
-					return;
-				}
-			}
-			if (e.dest_menu_no === '特困人员') {
-				if (collectorInfo.status !== '有效') {
-					uni.showModal({
-						title: '提示',
-						content: '你的信息还未被认证有效,请联系管理人员进行认证',
-						showCancel: false,
-						confirmText: '知道了'
-					});
-					return;
-				}
-			}
+			// let collectorInfo = await this.selectCollectorInfo();
+			// if (!collectorInfo) {
+			// 	uni.showModal({
+			// 		title: '提示',
+			// 		content: '当前登录用户未登记信息，是否跳转到信息登记页面',
+			// 		success(res) {
+			// 			if (res.confirm) {
+			// 				uni.navigateTo({
+			// 					url: '/pages/addInfo/addInfo'
+			// 				});
+			// 			}
+			// 		}
+			// 	});
+			// 	return;
+			// }
+			// if (e.dest_menu_no === '采集统计') {
+			// 	if (collectorInfo.is_admin !== '是') {
+			// 		uni.showToast({
+			// 			title: '没有访问权限',
+			// 			icon: 'none'
+			// 		});
+			// 		return;
+			// 	}
+			// }
+			// if (e.dest_menu_no === '特困人员') {
+			// 	if (collectorInfo.status !== '有效') {
+			// 		uni.showModal({
+			// 			title: '提示',
+			// 			content: '你的信息还未被认证有效,请联系管理人员进行认证',
+			// 			showCancel: false,
+			// 			confirmText: '知道了'
+			// 		});
+			// 		return;
+			// 	}
+			// }
 			if (e.type && e.type === 'more') {
 				// 点击了更多按钮
 				console.log('点击了更多按钮');

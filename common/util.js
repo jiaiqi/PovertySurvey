@@ -284,14 +284,6 @@ export default {
 								//TODO handle the exception
 							}
 						}
-						// fieldInfo.settings = {
-						// 	"eventType": "navTo",
-						// 	"eventTarget": "/pages/takePhotos/takePhotos?addType=person",
-						// 	"columnTemp": {
-						// 		"name": "name",
-						// 		"idNo": "identity_no"
-						// 	}
-						// }
 					}
 					fieldInfo.srvInfo = {
 						tableName: item.table_name,
@@ -1190,6 +1182,11 @@ export default {
 				if (Vue.prototype.isArray(field) && Vue.prototype.iObject(values)) {
 					for (let i = 0; i < field.length; i++) {
 						for (let key in values) {
+							if(field[i].col_type==='Set'&&field[i].value){
+								if(typeof field[i].value === 'string'){
+									field[i].value = field[i].value.split(',')
+								}
+							}
 							if (field[i].column === key) {
 								field[i].value = values[key]
 								field[i].defaultValue = values[key]
@@ -1201,6 +1198,7 @@ export default {
 										}
 									})
 								}
+								
 							}
 						}
 					}
@@ -1734,7 +1732,7 @@ export default {
 							} else return true
 
 						} else return false
-					},
+					}, 
 					Vue.prototype.strReplace = function(str, before, after) {
 						console.log(str, before, after)
 						if (str && before) {
@@ -1746,7 +1744,7 @@ export default {
 					}
 		Vue.prototype.html2text = (str) => {
 			let strs = ""
-			if (!!str) {
+			if (!!str && typeof str === 'string') {
 				strs = str.replace(/<(style|script|iframe)[^>]*?>[\s\S]+?<\/\1\s*>/gi, '').replace(/<[^>]+?>/g, '').replace(
 					/\s+/g, ' ').replace(/ /g, ' ').replace(/>/g, ' ')
 			}

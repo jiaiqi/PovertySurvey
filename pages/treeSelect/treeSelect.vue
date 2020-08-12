@@ -237,7 +237,6 @@ export default {
 		},
 		/** 组装地区数据*/
 		assemblyData(parentNo, areaTreeData, itemData) {
-			debugger;
 			let testData = [];
 			testData.push(itemData);
 			this.assemblyChildData(itemData, areaTreeData, parentNo);

@@ -94,7 +94,7 @@
 							color="#0081ff"
 							:value="item.value ? item.value : item.key"
 							:disabled="fieldData.disabled ? fieldData.disabled : false"
-							:checked="fieldData && fieldData.value && isArray(fieldData.value) ? fieldData.value.indexOf(item.key) !== -1 : false"
+							:checked="fieldData && fieldData.value && isArray(fieldData.value) ? fieldData.value.indexOf(item.value ? item.value : item.key) !== -1 : false"
 						/>
 						<text style="flex: 1;">{{ item.label }}</text>
 					</label>
@@ -1105,6 +1105,7 @@ export default {
 		fieldsModel: {
 			handler: function(newValue, oldValue) {
 				console.log('fieldsModel--------', newValue);
+				console.log('fieldData=========', this.fieldData);
 			},
 			deep: true
 		}
@@ -1132,7 +1133,6 @@ export default {
 	}
 	.radio-group {
 		display: flex;
-		// flex-direction: column;
 		flex-wrap: wrap;
 		.radio-item {
 			min-width: 30%;
@@ -1140,8 +1140,6 @@ export default {
 		}
 	}
 	.radio {
-		// min-width: 21%;
-		// margin-bottom: 10rpx;
 		margin: 10rpx;
 		label {
 			line-height: 70rpx;

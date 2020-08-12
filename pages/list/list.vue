@@ -28,6 +28,7 @@
 			:rownumber="10"
 			:showFootBtn="showFootBtn"
 			@click-list-item="clickItem"
+			@click-list-item-img="clickItemImg"
 			@list-change="listChange"
 			@clickFootBtn="clickFootBtn"
 			@loadEnd="loadEnd"
@@ -168,6 +169,25 @@ export default {
 				});
 			}
 			console.log('click-list-item:', e);
+		},
+		clickItemImg(e){
+			if (this.pageType === 'proc') {
+				uni.navigateTo({
+					url: '/pages/public/proc/procDetail/procDetail?proc_instance_no=' + e.proc_instance_no
+				});
+			} else {
+				let req = {
+					button: {
+						button_name: '详情',
+						button_type: 'detail',
+						service_name: this.serviceName
+					},
+					row: e
+				};
+				this.onButtonToUrl(req).then(res => {
+					console.log('clickItem :', res);
+				});
+			}
 		},
 		clickFootBtn(data) {
 			if (this.pageType === 'proc') {

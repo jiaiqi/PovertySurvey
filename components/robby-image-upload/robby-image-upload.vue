@@ -86,11 +86,8 @@
 		},
 		methods:{
 			toPage(){
-				debugger
 				if(this.settings.eventTarget){
-					// debugger
 					this.$emit("navTo",this.settings.eventTarget)
-					
 				}
 			},
 			selectImage: function(){
