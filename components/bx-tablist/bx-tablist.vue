@@ -208,7 +208,7 @@ export default {
     display: flex;
     padding-left: 20upx;
     .tab-item {
-      border: 1px solid #ff9700;
+      border: 1px solid #007aff;
       min-width: 150upx;
       padding: 0 20upx;
       height: 60upx;
@@ -226,7 +226,7 @@ export default {
       }
     }
     .current-tab {
-      background-color: #ff9700;
+      background-color: #007aff;
       color: #fff;
     }
   }

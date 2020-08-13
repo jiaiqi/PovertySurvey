@@ -1341,7 +1341,6 @@ export default {
 							})
 							break;
 						case "detail":
-
 							if (e.hasOwnProperty("row")) {
 								row = e.row
 								let params = {

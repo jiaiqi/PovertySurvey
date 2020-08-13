@@ -11,7 +11,7 @@
         :key="index"
         :style="{ width: menus.length === 5 || menus.length > 8 ? '20%' : '25%' }"
       >
-        <view class="menu-pic bg-blue" @click="clickMenu(item)" v-if="!item.icon&&item[menuTemplate['lableCol']]">{{ item[menuTemplate['lableCol']].slice(0, 2) }}</view>
+        <!-- <view class="menu-pic bg-blue" @click="clickMenu(item)" v-if="!item.icon&&item[menuTemplate['lableCol']]">{{ item[menuTemplate['lableCol']].slice(0, 2) }}</view> -->
         <view class="menu-pic" @click="clickMenu(item)" v-if="item.icon">
           <image class="picture" :src="backendUrl+ '/main/images/appicon/' + item.icon" mode=""></image>
         </view>

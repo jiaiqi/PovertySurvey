@@ -1,7 +1,7 @@
 <template>
 	<view class="content">
 		<!-- <mix-tree :list="list" @treeItemClick="treeItemClick"></mix-tree> -->
-		<ly-tree v-if="treeData.length > 0" :ready="ready" :props="props" :tree-data="treeData" node-key="id" @node-expand="handleNodeExpand" @node-click="handleNodeClick" />
+		<ly-tree v-if="treeData.length > 0" :ready="ready" :props="props" :tree-data="treeData" node-key="id" @item-detai='itemDetail' @node-expand="handleNodeExpand" @node-click="handleNodeClick" />
 		<!-- <ly-tree :tree-data="treeData" node-key="id" :props="props" @node-expand="handleNodeExpand" @node-click="handleNodeClick" /> -->
 		<!-- <pg-tree :list="list" :selected="selected" :unfoldPath="unfoldPath" :keepLevel="false" :isAllfold="2" :enableChoose="false" :finalChoose="false" :enableEdit="true" @itemClick="itemClick" @itemEdit="itemEdit" @switchFold="switchFold"></pg-tree> -->
 	</view>
@@ -46,6 +46,12 @@ export default {
 	},
 	methods: {
 		loadNode(node, resolve) {},
+		itemDetail(data){
+			console.log("====》",data) 
+			uni.navigateTo({
+				url: '../listdesc/listdesc?itemDetail=' + encodeURIComponent(JSON.stringify(data.item))
+			});
+		},
 		handleNodeClick(obj) {
 			// #ifdef APP-PLUS
 			console.log('handleNodeClick', JSON.stringify(obj));
@@ -54,7 +60,7 @@ export default {
 			// #ifndef APP-PLUS
 			console.log('handleNoiiiiideClick', obj);
 			uni.navigateTo({
-				url: '../listdesc/listdesc?itemDetail=' + encodeURIComponent(JSON.stringify(obj.data))
+				url: '../listdesc/listdesc?itemDetail=' + encodeURIComponent(JSON.stringify(obj))
 			});
 			// #endif
 		},
@@ -87,45 +93,27 @@ export default {
 			let res = await this.$http.post(urls, reqs);
 			if (res.data.state === 'SUCCESS') {
 				let data = res.data.data;
-				for (let j = 0; j < data.length; j++) {
-					let child_count = data[j];
-					if (child_count.is_leaf === '否') {
-						this.$set(child_count, 'children', []);
+				
+				let poverty = await this.getTreeDataCount();
+				
+				let totalNum = 0;
+				
+				data.forEach(all=>{
+					 let itemArea = 0;
+					 totalNum = 0;
+					 if(all.is_leaf === '否'){
+						 this.$set(all, 'children', []);
+					 }
+					for(let a = 0; a < poverty.length; a++){		
+						if(poverty[a].area_id.indexOf(all.path_name) !== -1){
+							itemArea++
+						}
 					}
-					let count_no = await this.getTreeDataCount(child_count);
-
-					// .then(count_no=>{
-					this.$set(child_count, 'num', 0);
-					child_count.num = 0;
-					if (count_no) {
-						this.$set(child_count, 'num', count_no.id);
-					}
-					// })
-				}
-				// data.forEach(child_count=>{
-				// 	if(child_count.is_leaf === '否'){
-				// 		this.$set(child_count,'children',[])
-				// 	}
-				// 	// this.getTreeDataCount(child_count).then(count_no=>{
-				// 	// 	this.$set(child_count,'num',0)
-				// 	// 	child_count.num = 0
-				// 	// 	if(count_no){
-				// 	// 		this.$set(child_count,'num',count_no.id)
-				// 	// 	}
-				// 	// })
-				// })
+					this.$set(all, 'num', itemArea);						
+				})
+				
 				console.log('--------', data);
 				e.data.children = data;
-				// setTimeout(()=>{
-				// 	let listData = []
-				// 		data.forEach(item=>{
-				// 			if(item.is_leaf == '否'){
-				// 				item.children = []
-				// 			}
-				// 			e.child.push(item)
-				// 		})
-				// 		console.log('e.child',e)
-				// },2000)
 			}
 		},
 		async getTreeRegionData() {
@@ -159,79 +147,63 @@ export default {
 				let data = res.data.data;
 				let listData = [];
 				
-				// let count_no = await this.getTreeDataCount();
-				// let totalNum = 0;
+				let poverty = await this.getTreeDataCount();
+				console.log("特困人员---",poverty)
 				
-				// data.forEach(all=>{
-				// 	 totalNum = 0;
-				// 	for(let a = 0; a < count_no.length; a++){
-				// 		totalNum += count_no.id;						
-				// 		if(all.path_name === count_no[a].area_id){
-				// 			this.$set(all,'num',count_no[a].id)
-				// 		}
-				// 	}
-				// 	if(all.no === '610800000000'){
-				// 		all.children = []
-				// 		this.$set(all,'num',totalNum)
-				// 		listData.push(all)						
-				// 	} else if(all.is_leaf == '否'){
-				// 		all.children = [];
-				// 		listData[0].children.push(all);
-				// 	}
-				// })
-								
-				for (let i = 0; i < data.length; i++) {
-					let nums = data[i];
-					let count_no = await this.getTreeDataCount(nums)
-					this.$set(nums, 'num', 0);
-					nums.num = 0;
-					if (count_no) {
-						this.$set(nums, 'num', count_no.id);
-					}
-					console.log('count_num', count_no);
-				}
-				data.forEach(item => {
-					if (item.no == '610800000000') {
-						item.children = [];
-						listData.push(item);
-					} else {
-						if (item.is_leaf == '否') {
-							item.children = [];
+				let totalNum = 0;
+				
+				data.forEach(all=>{
+					 let itemArea = 0;
+					 totalNum = 0;
+					for(let a = 0; a < poverty.length; a++){
+						// totalNum += count_no.id;						
+						if(poverty[a].area_id.indexOf(all.path_name) !== -1){
+							itemArea++
 						}
-						listData[0].children.push(item);
 					}
-				});
+					this.$set(all, 'num', itemArea);
+					if(all.no === '610800000000'){
+						all.children = []
+						this.$set(all,'num',poverty.length)
+						listData.push(all)						
+					} else if(all.is_leaf == '否'){
+						all.children = [];
+						listData[0].children.push(all);
+					}
+				})
 				console.log('res.data', listData);
 				this.ready = true;
 				this.treeData = listData;
 			
 			}
 		},
-		async getTreeDataCount(area) {
+		async getTreeDataCount() { 
 			let urls = this.getServiceUrl('daq', 'srvdaq_tkry_people_select', 'select');
 			let reqs = {
 				serviceName: 'srvdaq_tkry_people_select',
 				colNames: ['*'],
-				condition: [{
-					colName:"area_id",
-					ruleType:"like",
-					value:area.path_name
-				}],
-				group: [
-					// {
-					// 	colName: 'area_id',
-					// 	type: 'by'
-					// },
-					{
-						colName: 'id',
-						type: 'count'
-					}
-				]
+				condition: [
+				// 	{
+				// 	colName:"area_id",
+				// 	ruleType:"like",
+				// 	value:area.path_name
+				// },
+				],
+				// group: [
+				// 	// {
+				// 	// 	colName: 'area_id',
+				// 	// 	type: 'by'
+				// 	// },
+				// 	{
+				// 		colName: 'id',
+				// 		type: 'count'
+				// 	}
+				// ]
 			};
 			let res = await this.$http.post(urls, reqs);
 			if (res.data.state === 'SUCCESS') {
-				// let num = res.data.data;
-				let num = res.data.data[0]
+				let num = res.data.data;
+				// let num = res.data.data[0]
 				return num;
 			}
 		},

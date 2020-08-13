@@ -86,8 +86,9 @@ export default {
 		if (option.serviceName) {
 			this.serviceName = option.serviceName;
 		}
-		// uni.setStorageSync('activeApp', 'daq');
-		this.getListV2();
+		if (option.hasOwnProperty('pageType')) {
+			this.pageType = option.pageType;
+		}
 		if (option.cond) {
 			try {
 				let cond = JSON.parse(this.getDecodeUrl(option.cond));
@@ -101,17 +102,10 @@ export default {
 				}
 			} catch (e) {
 				//TODO handle the exception
+				console.warn(e);
 			}
-			// this.condition = JSON.parse(this.getDecodeUrl(option.cond));
 		}
-		if (option.hasOwnProperty('serviceName') && option.hasOwnProperty('pageType')) {
-			console.log('list option:', option);
-			this.serviceName = option.serviceName;
-			this.pageType = option.pageType;
-			this.getListV2();
-		} else {
-			
-		}
+		this.getListV2();
 	},
 	methods: {
 		toSearch() {
@@ -170,7 +164,7 @@ export default {
 			}
 			console.log('click-list-item:', e);
 		},
-		clickItemImg(e){
+		clickItemImg(e) {
 			if (this.pageType === 'proc') {
 				uni.navigateTo({
 					url: '/pages/public/proc/procDetail/procDetail?proc_instance_no=' + e.proc_instance_no
@@ -244,7 +238,7 @@ export default {
 						colVs.more_config = JSON.parse(colVs.more_config);
 					} catch (e) {
 						//TODO handle the exception
-						console.log(e);
+						console.warn(e);
 					}
 				}
 			}

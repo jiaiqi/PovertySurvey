@@ -184,7 +184,7 @@ export default {
 			this.condition = this.params.condition;
 			// this.defaultVal = this.params.defaultVal;
 			let cond = [];
-			if (this.params.cond && Array.isArray(this.params.cond)) {
+			if (this.params.cond && Array.isArray(this.params.cond) && this.params.cond.length > 0) {
 				cond = this.params.cond;
 				this.condition = cond;
 			}
@@ -231,6 +231,12 @@ export default {
 			this.type = this.params.type;
 			if (this.params.defaultCondition) {
 				this.defaultCondition = this.params.defaultCondition;
+			}
+			if (this.params.cond && Array.isArray(this.params.cond)) {
+				this.condition = this.params.cond;
+			}
+			if (this.params.condition && Array.isArray(this.params.condition)) {
+				this.condition = this.params.condition;
 			}
 			if (this.type === 'detail' || this.type === 'update') {
 				// this.getDetailfieldModel().then(res => {
@@ -517,6 +523,12 @@ export default {
 		},
 		async onButton(e) {
 			let data = this.$refs.bxForm.getFieldModel();
+			if(!data){
+				uni.showToast({
+					title:"未发现修改内容"
+				})
+				return
+			}
 			let req = this.deepClone(data);
 			console.log(this.condition);
 			console.log(e, req);
