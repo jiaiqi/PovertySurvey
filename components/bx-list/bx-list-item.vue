@@ -369,7 +369,13 @@ export default {
 			immediate: true,
 			handler(newVal) {
 				let self = this;
-				let arr = Object.values(this.viewTemp);
+				let arr = [];
+				if(typeof Object.values==='function'){
+					arr = Object.values(this.viewTemp)
+				}else{
+					let viewTemp = this.viewTemp
+					arr = this.getObjectValues(viewTemp)
+				}
 				if (arr.length === 0 && this.srv_cols && this.srv_cols.length > 0) {
 					let arr2 = this.srv_cols.map(item => item.columns);
 					Object.keys(this.goodsData).forEach((item, index) => {

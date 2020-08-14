@@ -81,7 +81,6 @@ export default {
 			// if (!uni.getStorageSync('isAuth')) {
 			this.getUserInfo();
 			// }
-
 			// #endif
 			// self.initLogin();
 		} else {
@@ -291,8 +290,7 @@ export default {
 			wx.getUserInfo({
 				success: function(res) {
 					uni.setStorageSync('wxuserinfo', res.userInfo);
-					self.getWxUserInfo();
-					// self.setWxUserInfo(res.userInfo);
+					self.getWxUserInfo(res.userInfo);
 					uni.setStorageSync('isAuth', true);
 					if (uni.getStorageSync('isAuth') === true) {
 						self.loginNavUrl(); // 登录成功回调

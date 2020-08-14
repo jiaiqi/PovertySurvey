@@ -984,7 +984,8 @@ export default {
 			}
 		}
 		Vue.prototype.getWxUserInfo = async function(userInfo) {
-				//查找微信用户头像昵称
+				// Vue.prototype.setWxUserInfo(userInfo)
+				查找微信用户头像昵称
 				let optionType = 'select';
 				let srv = 'srvwx_basic_user_info_select';
 				let app = 'wx';
@@ -1182,8 +1183,8 @@ export default {
 				if (Vue.prototype.isArray(field) && Vue.prototype.iObject(values)) {
 					for (let i = 0; i < field.length; i++) {
 						for (let key in values) {
-							if(field[i].col_type==='Set'&&field[i].value){
-								if(typeof field[i].value === 'string'){
+							if (field[i].col_type === 'Set' && field[i].value) {
+								if (typeof field[i].value === 'string') {
 									field[i].value = field[i].value.split(',')
 								}
 							}
@@ -1198,7 +1199,7 @@ export default {
 										}
 									})
 								}
-								
+
 							}
 						}
 					}
@@ -1731,7 +1732,7 @@ export default {
 							} else return true
 
 						} else return false
-					}, 
+					},
 					Vue.prototype.strReplace = function(str, before, after) {
 						console.log(str, before, after)
 						if (str && before) {
@@ -1749,6 +1750,13 @@ export default {
 			}
 
 			return strs
+		}
+		Vue.prototype.getObjectValues = (obj) => {
+			let result = []
+			for (let i in obj) {
+				result.push(obj[i])
+			}
+			return result
 		}
 	}
 }
