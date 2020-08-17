@@ -985,7 +985,7 @@ export default {
 		}
 		Vue.prototype.getWxUserInfo = async function(userInfo) {
 				// Vue.prototype.setWxUserInfo(userInfo)
-				查找微信用户头像昵称
+				// 查找微信用户头像昵称
 				let optionType = 'select';
 				let srv = 'srvwx_basic_user_info_select';
 				let app = 'wx';
@@ -1394,11 +1394,6 @@ export default {
 								console.log("点击了【无效】的公共编辑按钮")
 							}
 						case "customize":
-							//代码块
-							// if (btn.operate_type === '流程申请') {
-							// uni.navigateTo({
-							// 	url: "/pages/public/proc/apply/apply?serviceName=" + btn.operate_service
-							// })
 							return new Promise((resolve, reject) => {
 								resolve(e)
 							})
@@ -1757,6 +1752,10 @@ export default {
 				result.push(obj[i])
 			}
 			return result
+		}
+		if (!Object.values || typeof Object.values !== 'function') {
+			Object.values = Vue.prototype.getObjectValues
+			console.warn('%c 替换Object.values方法', 'color:#skyblue;fontSize:30px;fontWeight:bold;')
 		}
 	}
 }

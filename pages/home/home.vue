@@ -146,21 +146,21 @@ export default {
 		async clickMenu(e) {
 			// 菜单按钮点击事件
 			console.log('点击了按钮：', e);
-			// let collectorInfo = await this.selectCollectorInfo();
-			// if (!collectorInfo) {
-			// 	uni.showModal({
-			// 		title: '提示',
-			// 		content: '当前登录用户未登记信息，是否跳转到信息登记页面',
-			// 		success(res) {
-			// 			if (res.confirm) {
-			// 				uni.navigateTo({
-			// 					url: '/pages/addInfo/addInfo'
-			// 				});
-			// 			}
-			// 		}
-			// 	});
-			// 	return;
-			// }
+			let collectorInfo = await this.selectCollectorInfo();
+			if (!collectorInfo) {
+				uni.showModal({
+					title: '提示',
+					content: '当前登录用户未登记信息，是否跳转到信息登记页面',
+					success(res) {
+						if (res.confirm) {
+							uni.navigateTo({
+								url: '/pages/addInfo/addInfo'
+							});
+						}
+					}
+				});
+				return;
+			}
 			// if (e.dest_menu_no === '采集统计') {
 			// 	if (collectorInfo.is_admin !== '是') {
 			// 		uni.showToast({

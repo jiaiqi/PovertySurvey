@@ -1,9 +1,15 @@
 <template>
 	<view class="list-item-wrap">
 		<view class="list-item flex" v-if="viewType === 'normal'">
-			<image @click='listItemImgClick' class="main-image" v-if="listData.img" :src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + listData.img.value" :imgColName="'img'"></image>
 			<image
-				@click='listItemImgClick'
+				@click="listItemImgClick"
+				class="main-image"
+				v-if="listData.img"
+				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + listData.img.value"
+				:imgColName="'img'"
+			></image>
+			<image
+				@click="listItemImgClick"
 				class="main-image"
 				v-if="viewTemp['img']"
 				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + itemData[viewTemp['img']]"
@@ -96,7 +102,7 @@
 					{{ listData.subtitle.value ? listData.subtitle.value : '' }}
 				</view>
 				<view class="context " @click="listItemClick">
-					<view class="content content-item"  v-if="listData.content">
+					<view class="content content-item" v-if="listData.content">
 						<text v-if="listData.content.label">{{ listData.content.label }}:</text>
 						{{ listData.content.value ? listData.content.value : '' }}
 					</view>
@@ -204,7 +210,7 @@ export default {
 		listItemClick() {
 			this.$emit('click-list-item', this.deepClone(this.itemData));
 		},
-		listItemImgClick(){
+		listItemImgClick() {
 			this.$emit('click-list-item-img', this.deepClone(this.itemData));
 		},
 		footBtnClick(btn) {
@@ -369,13 +375,7 @@ export default {
 			immediate: true,
 			handler(newVal) {
 				let self = this;
-				let arr = [];
-				if(typeof Object.values==='function'){
-					arr = Object.values(this.viewTemp)
-				}else{
-					let viewTemp = this.viewTemp
-					arr = this.getObjectValues(viewTemp)
-				}
+				let arr = Object.values(this.viewTemp);
 				if (arr.length === 0 && this.srv_cols && this.srv_cols.length > 0) {
 					let arr2 = this.srv_cols.map(item => item.columns);
 					Object.keys(this.goodsData).forEach((item, index) => {

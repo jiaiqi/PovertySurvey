@@ -105,7 +105,7 @@ export default {
 						 this.$set(all, 'children', []);
 					 }
 					for(let a = 0; a < poverty.length; a++){		
-						if(poverty[a].area_id.indexOf(all.path_name) !== -1){
+						if(poverty[a]&&poverty[a].area_id&&poverty[a].area_id.indexOf(all.path_name) !== -1){
 							itemArea++
 						}
 					}
@@ -157,7 +157,7 @@ export default {
 					 totalNum = 0;
 					for(let a = 0; a < poverty.length; a++){
 						// totalNum += count_no.id;						
-						if(poverty[a].area_id.indexOf(all.path_name) !== -1){
+						if(poverty[a]&&poverty[a].area_id&&poverty[a].area_id.indexOf(all.path_name) !== -1){
 							itemArea++
 						}
 					}
