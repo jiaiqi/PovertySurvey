@@ -15,7 +15,7 @@
 				:src="picUrl + '/file/download?bx_auth_ticket=' + bx_auth_ticket + '&fileNo=' + itemData[viewTemp['img']]"
 				:imgColName="'img'"
 			></image>
-			<view class="content-box flex-twice" v-if="listType === 'proc'">
+			<view class="content-box flex-twice" :class="{ hasImg: listData.img || viewTemp['img'] }" v-if="listType === 'proc'">
 				<view class="content-header">
 					<view class="title" @click="listItemClick">{{ itemData[viewTemp.title] }}</view>
 					<view class="status" v-if="itemData.proc_status" @click="listItemClick">
@@ -92,7 +92,7 @@
 					</view>
 				</view>
 			</view>
-			<view class="content-box flex-twice" v-else>
+			<view class="content-box flex-twice" :class="{ hasImg: listData.img || viewTemp['img']}" v-else>
 				<view class="title content-item" v-if="listData.title" @click="listItemClick">
 					<text v-if="listData.title.label">{{ listData.title.label }}:</text>
 					{{ listData.title.value ? listData.title.value : '' }}
@@ -577,6 +577,9 @@ export default {
 			flex-wrap: wrap;
 			flex-direction: column;
 			color: #999;
+			&.hasImg{
+				max-width: calc(100% - 250rpx);
+			}
 			.title {
 				width: 60%;
 				line-height: 40upx;

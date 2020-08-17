@@ -1269,7 +1269,8 @@ uni-text.input-icon {
 	.detail-text {
 		flex: 1;
 		color: #333;
-		line-height: 30px;
+		// line-height: 30px;
+		padding: 10upx 0;
 		text-indent: 20rpx;
 		.detail-image {
 			width: 100%;

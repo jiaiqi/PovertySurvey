@@ -238,6 +238,9 @@ export default {
 			if (this.params.cond && Array.isArray(this.params.cond)) {
 				this.condition = this.params.cond;
 			}
+			if (this.params.defaultVal) {
+				this.defaultVal = this.params.defaultVal;
+			}
 			if (this.params.condition && Array.isArray(this.params.condition)) {
 				this.params.condition.forEach(item=>{
 					if (item.colName === 'openid' && item.value === 'user_no') {
